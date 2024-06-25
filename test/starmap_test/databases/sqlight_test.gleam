@@ -96,6 +96,7 @@ pub fn select_test() {
   let name = "Yippie"
   let avatar = "somepath"
 
+  create_tables(conn)
   insert_values(conn)
 
   let query =
