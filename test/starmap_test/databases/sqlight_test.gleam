@@ -57,12 +57,6 @@ fn get_connection(func) {
 
 fn insert_values(conn) {
   sqlight.exec(
-    "CREATE TABLE accounts (id integer, name text, avatar text);",
-    conn,
-  )
-  |> should.be_ok()
-
-  sqlight.exec(
     "INSERT INTO accounts (id, name, avatar) VALUES (1, 'Yippie', 'somepath');",
     conn,
   )
