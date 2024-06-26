@@ -1,11 +1,13 @@
 import gleam/list
-import gleam/option.{type Option}
+import gleam/option.{type Option, None, Some}
 import gleeunit/should
 import sqlight
 import starmap/creation
+import starmap/insertion
 import starmap/query
 import starmap/schema.{type Column, Column, Table}
 import starmap/sqlight/conversion
+import starmap/sqlight/execute
 import starmap/sqlight/types
 
 const accounts_name = "accounts"
@@ -56,10 +58,17 @@ fn get_connection(func) {
 }
 
 fn insert_values(conn) {
-  sqlight.exec(
-    "INSERT INTO accounts (id, name, avatar) VALUES (1, 'Yippie', 'somepath');",
-    conn,
+  accounts
+  |> insertion.insert_into()
+  |> insertion.columns3(
+    accounts.table.id,
+    accounts.table.name,
+    accounts.table.avatar,
   )
+  |> insertion.value(#(1, "Lucy", Some("somepath")))
+  |> insertion.value(#(2, "Me!", None))
+  |> insertion.values([#(3, "You!", None), #(4, "Someone!", Some("pfp"))])
+  |> execute.insertion3(conn)
   |> should.be_ok()
 }
 
@@ -93,7 +102,7 @@ pub fn select_test() {
   use conn <- get_connection()
 
   let id = 1
-  let name = "Yippie"
+  let name = "Lucy"
   let avatar = "somepath"
 
   create_tables(conn)
@@ -110,7 +119,7 @@ pub fn select_test() {
 
   let results =
     query
-    |> conversion.convert_query()
+    |> conversion.query()
     |> sqlight.query(
       conn,
       [],

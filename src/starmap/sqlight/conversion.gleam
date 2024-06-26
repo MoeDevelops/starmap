@@ -1,16 +1,28 @@
 import gleam/list
 import gleam/string
-import starmap/query.{type Query, type Select}
+import starmap/insertion.{type Insertion}
+import starmap/query.{type Query}
+import starmap/schema.{type Column}
 
-pub fn convert_query(query: Query(a)) {
+pub fn query(query: Query(a)) -> String {
   "
-  SELECT " <> selects_to_string(query.selects) <> "
+  SELECT " <> query.selects
+  |> list.map(fn(x) { x.table <> "." <> x.column })
+  |> string.join(", ") <> "
   FROM " <> query.table <> "
   "
 }
 
-fn selects_to_string(selects: List(Select)) -> String {
-  selects
-  |> list.map(fn(x) { x.table <> "." <> x.column })
+pub fn insertion3(
+  insertion: Insertion(#(Column(a, b), Column(c, d), Column(e, f)), #(a, c, e)),
+) -> String {
+  let #(column1, column2, column3) = insertion.columns
+
+  "
+  INSERT INTO " <> insertion.table <> "
+  (" <> column1.name <> ", " <> column2.name <> ", " <> column3.name <> ")
+  VALUES
+  " <> insertion.values
+  |> list.map(fn(_) { "(?, ?, ?)" })
   |> string.join(", ")
 }

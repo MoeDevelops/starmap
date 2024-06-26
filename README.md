@@ -1,4 +1,4 @@
-# starmap
+# Starmap
 
 **THIS IS VERY WORK IN PROGRESS!!! EVERYTHING CAN (and probably will) BREAK!!!**
 
