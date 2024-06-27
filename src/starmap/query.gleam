@@ -1,101 +1,103 @@
-import gleam/dynamic
 import gleam/list
-import starmap/schema.{type Column, type Encoding, type Table}
+import gleam/option.{type Option, None}
+import starmap/schema.{type Column, type Table}
 
-pub type Query(a) {
+pub type Query(t_table, t_columns, t_wheres) {
   Query(
-    table: String,
-    inner_joins: List(InnerJoin),
-    selects: List(Select),
-    encoding: a,
+    table: Table(t_table),
+    columns: t_columns,
+    joins: List(Join),
+    wheres: Option(t_wheres),
+    order_by: List(TableColumn),
+    group_by: List(TableColumn),
   )
 }
 
-pub type InnerJoin {
-  InnerJoin(table1: String, column1: String, table2: String, column2: String)
+pub type TableColumn {
+  TableColumn(table: String, column: String)
 }
 
-pub type Select {
-  Select(table: String, column: String)
+pub type Where(a, b) {
+  Equal(columns: WhereColumns(a, b))
+  NotEqual(columns: WhereColumns(a, b))
+  Greater(columns: WhereColumns(a, b))
+  GreaterOrEqual(columns: WhereColumns(a, b))
+  Lower(columns: WhereColumns(a, b))
+  LowerOrEqual(columns: WhereColumns(a, b))
+  And(where1: Where(a, b), where2: Where(a, b))
+  Or(where1: Where(a, b), where2: Where(a, b))
 }
 
-pub fn from(table: Table(a)) -> Query(Nil) {
-  Query(table.name, [], [], Nil)
+pub type WhereColumns(a, b) {
+  OneColumn(Column(a, b), a)
+  TwoColumns(Column(a, b), Column(a, b))
+}
+
+pub type Join {
+  Join(column1: TableColumn, column2: TableColumn)
+}
+
+pub fn from(table: Table(t_table)) -> Query(t_table, Nil, wheres_type) {
+  Query(
+    table: table,
+    columns: Nil,
+    joins: [],
+    wheres: None,
+    order_by: [],
+    group_by: [],
+  )
 }
 
 pub fn inner_join(
-  query: Query(q),
-  column1: Column(a, b),
-  column2: Column(a, b),
-) -> Query(q) {
+  query: Query(t_table, t_columns, t_wheres),
+  column1: Column(a, value),
+  column2: Column(a, value),
+) -> Query(t_table, t_columns, t_wheres) {
   Query(
     ..query,
-    inner_joins: query.inner_joins
+    joins: query.joins
       |> list.append([
-        InnerJoin(
-          column1.table_name,
-          column1.name,
-          column2.table_name,
-          column2.name,
+        Join(
+          TableColumn(column1.table, column1.name),
+          TableColumn(column2.table, column2.name),
         ),
       ]),
   )
 }
 
-pub fn select1(
-  query: Query(Nil),
-  column1: Column(a, b),
-) -> Query(Encoding(a, b)) {
+// For when not being able to spread
+fn query_replace_columns(
+  query: Query(t_table, Nil, t_wheres),
+  columns: a,
+) -> Query(t_table, a, t_wheres) {
   Query(
     table: query.table,
-    inner_joins: query.inner_joins,
-    selects: [Select(column1.table_name, column1.name)],
-    encoding: column1.column_type().encoding,
+    columns: columns,
+    joins: query.joins,
+    wheres: query.wheres,
+    order_by: query.order_by,
+    group_by: query.group_by,
   )
 }
 
-pub fn select2(
-  query: Query(Nil),
-  column1: Column(a, b),
-  column2: Column(c, d),
-) -> Query(#(Encoding(a, b), Encoding(c, d))) {
-  Query(
-    table: query.table,
-    inner_joins: query.inner_joins,
-    selects: [
-      Select(column1.table_name, column1.name),
-      Select(column2.table_name, column2.name),
-    ],
-    encoding: #(column1.column_type().encoding, column2.column_type().encoding),
-  )
+pub fn select1(
+  query: Query(t_table, Nil, t_wheres),
+  column1: Column(a, value),
+) -> Query(t_table, Column(a, value), t_wheres) {
+  query
+  |> query_replace_columns(column1)
 }
 
 pub fn select3(
-  query: Query(Nil),
-  column1: Column(a, b),
-  column2: Column(c, d),
-  column3: Column(e, f),
-) -> Query(#(Encoding(a, b), Encoding(c, d), Encoding(e, f))) {
-  Query(
-    table: query.table,
-    inner_joins: query.inner_joins,
-    selects: [
-      Select(column1.table_name, column1.name),
-      Select(column2.table_name, column2.name),
-      Select(column3.table_name, column3.name),
-    ],
-    encoding: #(
-      column1.column_type().encoding,
-      column2.column_type().encoding,
-      column3.column_type().encoding,
-    ),
-  )
-}
-
-pub fn encodings_to_tuple3_decoder(
-  encodings: #(Encoding(a, b), Encoding(c, d), Encoding(e, f)),
+  query: Query(t_table, Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+  column3: Column(c, value),
+) -> Query(
+  t_table,
+  #(Column(a, value), Column(b, value), Column(c, value)),
+  t_where,
 ) {
-  let #(enc1, enc2, enc3) = encodings
-
-  dynamic.tuple3(enc1.decoder, enc2.decoder, enc3.decoder)
+  query
+  |> query_replace_columns(#(column1, column2, column3))
 }

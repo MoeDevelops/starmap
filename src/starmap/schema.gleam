@@ -6,7 +6,7 @@ pub type Table(table) {
 
 pub type Column(datatype, value) {
   Column(
-    table_name: String,
+    table: String,
     name: String,
     column_type: fn() -> ColumnType(datatype, value),
     arguments: fn() -> List(ColumnArguments),

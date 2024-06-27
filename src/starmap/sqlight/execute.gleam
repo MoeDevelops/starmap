@@ -1,17 +1,46 @@
-import gleam/dynamic.{type Dynamic}
+import gleam/dynamic
 import gleam/list
 import gleam/result
 import sqlight.{type Connection, type Error, type Value}
 import starmap/insertion.{type Insertion}
 import starmap/query.{type Query}
 import starmap/schema.{type Column}
-import starmap/sqlight/conversion
+import starmap/sqlight/convert
 
-pub fn query(query: Query(a), conn: Connection) -> Result(List(Dynamic), Error) {
+pub fn query1(
+  query: Query(t_table, Column(a, value), t_wheres),
+  conn: Connection,
+) -> Result(List(a), Error) {
   query
-  |> conversion.query()
-  // Still todo!
-  |> sqlight.query(conn, [], dynamic.dynamic)
+  |> convert.query1()
+  |> sqlight.query(
+    conn,
+    [],
+    dynamic.element(0, query.columns.column_type().encoding.decoder),
+  )
+}
+
+pub fn query3(
+  query: Query(
+    t_table,
+    #(Column(a, value), Column(b, value), Column(c, value)),
+    t_wheres,
+  ),
+  conn: Connection,
+) -> Result(List(#(a, b, c)), Error) {
+  let #(column1, column2, column3) = query.columns
+
+  query
+  |> convert.query3()
+  |> sqlight.query(
+    conn,
+    [],
+    dynamic.tuple3(
+      column1.column_type().encoding.decoder,
+      column2.column_type().encoding.decoder,
+      column3.column_type().encoding.decoder,
+    ),
+  )
 }
 
 pub fn insertion3(
@@ -42,7 +71,7 @@ pub fn insertion3(
     })
 
   insertion
-  |> conversion.insertion3()
+  |> convert.insertion3()
   |> sqlight.query(conn, values, decoder)
   |> result.map(fn(_) { Nil })
 }

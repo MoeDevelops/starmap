@@ -6,7 +6,6 @@ import starmap/creation
 import starmap/insertion
 import starmap/query
 import starmap/schema.{type Column, Column, Table}
-import starmap/sqlight/conversion
 import starmap/sqlight/execute
 import starmap/sqlight/types
 
@@ -65,9 +64,12 @@ fn insert_values(conn) {
     accounts.table.name,
     accounts.table.avatar,
   )
-  |> insertion.value(#(1, "Lucy", Some("somepath")))
-  |> insertion.value(#(2, "Me!", None))
-  |> insertion.values([#(3, "You!", None), #(4, "Someone!", Some("pfp"))])
+  |> insertion.values([
+    #(1, "Lucy", Some("somepath")),
+    #(2, "Me!", None),
+    #(3, "You!", None),
+    #(4, "Someone!", Some("pfp")),
+  ])
   |> execute.insertion3(conn)
   |> should.be_ok()
 }
@@ -119,12 +121,7 @@ pub fn select_test() {
 
   let results =
     query
-    |> conversion.query()
-    |> sqlight.query(
-      conn,
-      [],
-      query.encodings_to_tuple3_decoder(query.encoding),
-    )
+    |> execute.query3(conn)
     |> should.be_ok()
 
   let #(result_id, result_name, result_avatar) =
