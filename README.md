@@ -19,11 +19,16 @@ gleam add starmap
 ```
 
 ```gleam
+import gleam/int
+import gleam/io
+import gleam/list
+import gleam/option.{type Option, None, Some}
 import sqlight
 import starmap/creation
+import starmap/insertion
 import starmap/query
 import starmap/schema.{type Column, Column, Table}
-import starmap/sqlight/conversion
+import starmap/sqlight/execute
 import starmap/sqlight/types
 
 const accounts_name = "accounts"
@@ -33,7 +38,7 @@ const accounts = Table(
   Accounts(
     id: Column(accounts_name, "id", types.integer, schema.no_args),
     name: Column(accounts_name, "name", types.text, schema.no_args),
-    avatar: Column(accounts_name, "avatar", types.text, schema.no_args),
+    avatar: Column(accounts_name, "avatar", types.text_nullable, schema.no_args),
   ),
 )
 
@@ -41,7 +46,7 @@ pub type Accounts(a) {
   Accounts(
     id: Column(Int, a),
     name: Column(String, a),
-    avatar: Column(String, a),
+    avatar: Column(Option(String), a),
   )
 }
 
@@ -57,9 +62,22 @@ pub fn main() {
     )
     |> sqlight.exec(conn)
 
-  // Insert data (not done yet)
+  let assert Ok(_) =
+    accounts
+    |> insertion.insert_into()
+    |> insertion.columns3(
+      accounts.table.id,
+      accounts.table.name,
+      accounts.table.avatar,
+    )
+    |> insertion.values([
+      #(1, "Lucy", Some("lucy.svg")),
+      #(2, "John Doe", None),
+      #(3, "MoeDev", None),
+    ])
+    |> execute.insertion3(conn)
 
-  let query =
+  let assert Ok(results) =
     accounts
     |> query.from()
     |> query.select3(
@@ -67,16 +85,16 @@ pub fn main() {
       accounts.table.name,
       accounts.table.avatar,
     )
+    |> execute.query3(conn)
 
-  let assert Ok(results) =
-    query
-    |> conversion.convert_query()
-    |> sqlight.query(
-      conn,
-      [],
-      query.encodings_to_tuple3_decoder(query.encoding),
-    )
+  results
+  |> list.map(fn(row) {
+    let #(id, name, avatar) = row
+    int.to_string(id) <> " " <> name <> " " <> option.unwrap(avatar, "")
+  })
+  |> list.each(io.println)
 }
+
 ```
 
 Further documentation can be found at <https://hexdocs.pm/starmap>.
