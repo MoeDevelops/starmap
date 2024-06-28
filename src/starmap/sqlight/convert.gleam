@@ -3,6 +3,7 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
 import gleam/string_builder.{type StringBuilder, append}
+import starmap/creation.{type CreateTable}
 import starmap/insertion.{type Insertion}
 import starmap/query.{type Query}
 import starmap/schema.{type Column}
@@ -15,6 +16,10 @@ fn append_line(builder: StringBuilder, s: String) -> StringBuilder {
 
 fn format_column(column: Column(a, value)) -> String {
   column.table <> "." <> column.name
+}
+
+fn format_column_create_table(column: Column(a, b)) -> String {
+  column.name <> " " <> column.column_type().name
 }
 
 pub fn query1(query: Query(t_table, Column(a, value), t_wheres)) -> String {
@@ -50,6 +55,28 @@ pub fn query3(
   }
 
   builder
+  |> string_builder.to_string()
+}
+
+pub fn create_table3(
+  create_table: CreateTable(
+    t_table,
+    #(Column(a, value), Column(b, value), Column(c, value)),
+  ),
+) -> String {
+  let #(column1, column2, column3) = create_table.columns
+
+  string_builder.new()
+  |> append("CREATE TABLE ")
+  |> append(create_table.table.name)
+  |> append_line(" (")
+  |> append(format_column_create_table(column1))
+  |> append_line(", ")
+  |> append(format_column_create_table(column2))
+  |> append_line(", ")
+  |> append(format_column_create_table(column3))
+  // 'STRICT' enforces type-safety in the table
+  |> append(") STRICT;")
   |> string_builder.to_string()
 }
 

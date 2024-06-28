@@ -81,7 +81,7 @@ fn create_tables(conn) {
     accounts.table.name,
     accounts.table.avatar,
   )
-  |> sqlight.exec(conn)
+  |> execute.create_table3(conn)
   |> should.be_ok()
 
   passwords
@@ -90,7 +90,7 @@ fn create_tables(conn) {
     passwords.table.password,
     passwords.table.salt,
   )
-  |> sqlight.exec(conn)
+  |> execute.create_table3(conn)
   |> should.be_ok()
 }
 

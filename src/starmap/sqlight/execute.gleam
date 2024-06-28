@@ -2,6 +2,7 @@ import gleam/dynamic
 import gleam/list
 import gleam/result
 import sqlight.{type Connection, type Error, type Value}
+import starmap/creation.{type CreateTable}
 import starmap/insertion.{type Insertion}
 import starmap/query.{type Query}
 import starmap/schema.{type Column}
@@ -41,6 +42,18 @@ pub fn query3(
       column3.column_type().encoding.decoder,
     ),
   )
+}
+
+pub fn create_table3(
+  create_table: CreateTable(
+    t_table,
+    #(Column(a, value), Column(b, value), Column(c, value)),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table3()
+  |> sqlight.exec(conn)
 }
 
 pub fn insertion3(
