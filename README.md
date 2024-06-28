@@ -94,7 +94,6 @@ pub fn main() {
   })
   |> list.each(io.println)
 }
-
 ```
 
 Further documentation can be found at <https://hexdocs.pm/starmap>.

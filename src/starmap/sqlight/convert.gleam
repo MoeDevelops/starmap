@@ -1,8 +1,17 @@
+import gleam/int
 import gleam/list
+import gleam/option.{None, Some}
 import gleam/string
+import gleam/string_builder.{type StringBuilder, append}
 import starmap/insertion.{type Insertion}
 import starmap/query.{type Query}
 import starmap/schema.{type Column}
+
+fn append_line(builder: StringBuilder, s: String) -> StringBuilder {
+  builder
+  |> append(s)
+  |> append("\n")
+}
 
 fn format_column(column: Column(a, value)) -> String {
   column.table <> "." <> column.name
@@ -22,12 +31,26 @@ pub fn query3(
 ) -> String {
   let #(column1, column2, column3) = query.columns
 
-  "SELECT "
-  <> [format_column(column1), format_column(column2), format_column(column3)]
-  |> string.join(", ")
-  <> "
-  FROM "
-  <> query.table.name
+  let builder =
+    string_builder.new()
+    |> append("SELECT ")
+    |> append_line(
+      [format_column(column1), format_column(column2), format_column(column3)]
+      |> string.join(", "),
+    )
+    |> append("FROM ")
+    |> append_line(query.table.name)
+
+  let builder = case query.limit {
+    Some(limit) ->
+      builder
+      |> append("LIMIT " <> int.to_string(limit))
+      |> append("\n")
+    None -> builder
+  }
+
+  builder
+  |> string_builder.to_string()
 }
 
 pub fn insertion3(

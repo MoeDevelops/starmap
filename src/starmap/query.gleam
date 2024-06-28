@@ -1,5 +1,5 @@
 import gleam/list
-import gleam/option.{type Option, None}
+import gleam/option.{type Option, None, Some}
 import starmap/schema.{type Column, type Table}
 
 pub type Query(t_table, t_columns, t_wheres) {
@@ -10,6 +10,7 @@ pub type Query(t_table, t_columns, t_wheres) {
     wheres: Option(t_wheres),
     order_by: List(TableColumn),
     group_by: List(TableColumn),
+    limit: Option(Int),
   )
 }
 
@@ -37,6 +38,22 @@ pub type Join {
   Join(column1: TableColumn, column2: TableColumn)
 }
 
+// For when not being able to spread due to different generics
+fn query_replace_columns(
+  query: Query(t_table, Nil, t_wheres),
+  columns: a,
+) -> Query(t_table, a, t_wheres) {
+  Query(
+    table: query.table,
+    columns: columns,
+    joins: query.joins,
+    wheres: query.wheres,
+    order_by: query.order_by,
+    group_by: query.group_by,
+    limit: query.limit,
+  )
+}
+
 pub fn from(table: Table(t_table)) -> Query(t_table, Nil, wheres_type) {
   Query(
     table: table,
@@ -45,6 +62,7 @@ pub fn from(table: Table(t_table)) -> Query(t_table, Nil, wheres_type) {
     wheres: None,
     order_by: [],
     group_by: [],
+    limit: None,
   )
 }
 
@@ -62,21 +80,6 @@ pub fn inner_join(
           TableColumn(column2.table, column2.name),
         ),
       ]),
-  )
-}
-
-// For when not being able to spread
-fn query_replace_columns(
-  query: Query(t_table, Nil, t_wheres),
-  columns: a,
-) -> Query(t_table, a, t_wheres) {
-  Query(
-    table: query.table,
-    columns: columns,
-    joins: query.joins,
-    wheres: query.wheres,
-    order_by: query.order_by,
-    group_by: query.group_by,
   )
 }
 
@@ -100,4 +103,11 @@ pub fn select3(
 ) {
   query
   |> query_replace_columns(#(column1, column2, column3))
+}
+
+pub fn limit(
+  query: Query(t_table, t_columns, t_wheres),
+  amount: Int,
+) -> Query(t_table, t_columns, t_wheres) {
+  Query(..query, limit: Some(amount))
 }

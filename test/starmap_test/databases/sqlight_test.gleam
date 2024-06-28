@@ -139,3 +139,48 @@ pub fn select_test() {
   |> should.be_some()
   |> should.equal(avatar)
 }
+
+pub fn select_amount_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  let results =
+    accounts
+    |> query.from()
+    |> query.select3(
+      accounts.table.id,
+      accounts.table.name,
+      accounts.table.avatar,
+    )
+    |> execute.query3(conn)
+    |> should.be_ok()
+
+  results
+  |> list.length()
+  |> should.equal(4)
+}
+
+pub fn select_amount_limit_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  let results =
+    accounts
+    |> query.from()
+    |> query.select3(
+      accounts.table.id,
+      accounts.table.name,
+      accounts.table.avatar,
+    )
+    |> query.limit(2)
+    |> execute.query3(conn)
+    |> should.be_ok()
+
+  results
+  |> list.length()
+  |> should.equal(2)
+}
