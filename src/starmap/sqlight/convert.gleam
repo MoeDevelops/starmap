@@ -5,7 +5,10 @@ import gleam/string
 import gleam/string_builder.{type StringBuilder, append}
 import starmap/creation.{type CreateTable}
 import starmap/insertion.{type Insertion}
-import starmap/query.{type Query}
+import starmap/query.{
+  type ConvertedWhere, type Query, type TableColumn, ConvertedIsNull,
+  TableColumn,
+}
 import starmap/schema.{type Column, PrimaryKey}
 
 fn append_line(builder: StringBuilder, s: String) -> StringBuilder {
@@ -28,8 +31,35 @@ fn add_limit(builder: StringBuilder, limit: Option(Int)) -> StringBuilder {
   }
 }
 
+fn add_where(
+  builder: StringBuilder,
+  wheres: List(ConvertedWhere(value)),
+) -> StringBuilder {
+  case wheres {
+    [] -> builder
+    _ ->
+      builder
+      |> append("WHERE ")
+      |> append(
+        wheres
+        |> list.map(fn(where) {
+          case where {
+            ConvertedIsNull(table_column) ->
+              format_table_column(table_column) <> " IS NULL"
+            _ -> panic as "Not implemented"
+          }
+        })
+        |> string.join("\nAND "),
+      )
+  }
+}
+
 fn format_column(column: Column(a, value)) -> String {
   column.table <> "." <> column.name
+}
+
+fn format_table_column(table_column: TableColumn) -> String {
+  table_column.table <> "." <> table_column.column
 }
 
 fn filter_primary_key(column: Column(a, value)) -> Option(String) {
@@ -93,6 +123,7 @@ pub fn query3(
   )
   |> append("FROM ")
   |> append_line(query.table)
+  |> add_where(query.wheres)
   |> add_limit(query.limit)
   |> string_builder.to_string()
 }

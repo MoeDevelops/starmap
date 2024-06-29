@@ -4,7 +4,7 @@ import gleeunit/should
 import sqlight
 import starmap/creation
 import starmap/insertion
-import starmap/query
+import starmap/query.{IsNull}
 import starmap/schema.{type Column, Column, ForeignKey, PrimaryKey}
 import starmap/sqlight/execute
 import starmap/sqlight/types
@@ -143,14 +143,26 @@ pub fn select_amount_limit_test() {
   create_tables(conn)
   insert_values(conn)
 
-  let results =
-    query.from(accounts_table)
-    |> query.select3(accounts.id, accounts.name, accounts.avatar)
-    |> query.limit(2)
-    |> execute.query3(conn)
-    |> should.be_ok()
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.limit(2)
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(2)
+}
 
-  results
+pub fn where_is_null_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(IsNull(accounts.avatar))
+  |> execute.query3(conn)
+  |> should.be_ok()
   |> list.length()
   |> should.equal(2)
 }

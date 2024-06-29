@@ -2,12 +2,12 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import starmap/schema.{type Column}
 
-pub type Query(t_columns, t_wheres) {
+pub type Query(t_columns, t_value) {
   Query(
     table: String,
     columns: t_columns,
     joins: List(Join),
-    wheres: Option(t_wheres),
+    wheres: List(ConvertedWhere(t_value)),
     order_by: List(TableColumn),
     group_by: List(TableColumn),
     limit: Option(Int),
@@ -18,20 +18,31 @@ pub type TableColumn {
   TableColumn(table: String, column: String)
 }
 
-pub type Where(a, b) {
-  Equal(columns: WhereColumns(a, b))
-  NotEqual(columns: WhereColumns(a, b))
-  Greater(columns: WhereColumns(a, b))
-  GreaterOrEqual(columns: WhereColumns(a, b))
-  Lower(columns: WhereColumns(a, b))
-  LowerOrEqual(columns: WhereColumns(a, b))
-  And(where1: Where(a, b), where2: Where(a, b))
-  Or(where1: Where(a, b), where2: Where(a, b))
+pub type Where(a, value) {
+  Equal(columns: WhereColumns(a, value))
+  NotEqual(columns: WhereColumns(a, value))
+  IsNull(column: Column(Option(a), value))
+  Greater(columns: WhereColumns(a, value))
+  GreaterOrEqual(columns: WhereColumns(a, value))
+  Lower(columns: WhereColumns(a, value))
+  LowerOrEqual(columns: WhereColumns(a, value))
+  Or(where1: Where(a, value), where2: Where(a, value))
 }
 
-pub type WhereColumns(a, b) {
-  OneColumn(Column(a, b), a)
-  TwoColumns(Column(a, b), Column(a, b))
+pub type WhereColumns(a, value) {
+  Column(column: Column(a, value), val: a)
+  Columns(column1: Column(a, value), column2: Column(a, value))
+}
+
+/// Where in a listable format
+pub type ConvertedWhere(value) {
+  ConvertedEqual(columns: ConvertedWhereColumns(value))
+  ConvertedIsNull(column: TableColumn)
+}
+
+pub type ConvertedWhereColumns(value) {
+  ConvertedColumn(column: TableColumn, val: value)
+  ConvertedColumns(column1: TableColumn, column2: TableColumn)
 }
 
 pub type Join {
@@ -59,7 +70,7 @@ pub fn from(table: String) -> Query(Nil, wheres_type) {
     table: table,
     columns: Nil,
     joins: [],
-    wheres: None,
+    wheres: [],
     order_by: [],
     group_by: [],
     limit: None,
@@ -99,6 +110,23 @@ pub fn select3(
 ) -> Query(#(Column(a, value), Column(b, value), Column(c, value)), t_where) {
   query
   |> query_replace_columns(#(column1, column2, column3))
+}
+
+pub fn where(
+  query: Query(t_columns, t_value),
+  where: Where(a, t_value),
+) -> Query(t_columns, t_value) {
+  Query(
+    ..query,
+    wheres: query.wheres
+      |> list.append([
+        case where {
+          IsNull(column) ->
+            ConvertedIsNull(TableColumn(column.table, column.name))
+          _ -> panic as "Not implemented"
+        },
+      ]),
+  )
 }
 
 pub fn limit(
