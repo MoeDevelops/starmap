@@ -4,7 +4,7 @@ pub type Column(datatype, value) {
   Column(
     table: String,
     name: String,
-    column_type: fn() -> ColumnType(datatype, value),
+    column_type: ColumnType(datatype, value),
     arguments: List(ColumnArguments),
   )
 }

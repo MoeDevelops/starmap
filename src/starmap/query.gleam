@@ -170,7 +170,7 @@ fn convert_where_columns(
     ColumnValue(column, val) ->
       ConvertedColumnValue(
         TableColumn(column.table, column.name),
-        column.column_type().encoding.encoder(val),
+        column.column_type.encoding.encoder(val),
       )
     Columns(column1, column2) ->
       ConvertedColumns(

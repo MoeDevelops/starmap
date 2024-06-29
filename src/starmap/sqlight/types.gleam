@@ -1,74 +1,104 @@
-import gleam/dynamic
+import gleam/dynamic.{type DecodeErrors, type Dynamic}
 import gleam/option.{type Option}
 import sqlight.{type Value}
 import starmap/schema.{type ColumnType, ColumnType, Encoding}
 
-pub fn integer() -> ColumnType(Int, Value) {
-  ColumnType("integer", False, Encoding(sqlight.int, dynamic.int))
+pub const integer = ColumnType(
+  "integer",
+  False,
+  Encoding(sqlight.int, dynamic.int),
+)
+
+pub const integer_nullable = ColumnType(
+  "integer",
+  True,
+  Encoding(integer_nullable_encode, integer_nullable_decode),
+)
+
+fn integer_nullable_encode(val: Option(Int)) -> Value {
+  sqlight.nullable(sqlight.int, val)
 }
 
-pub fn integer_nullable() -> ColumnType(Option(Int), Value) {
-  ColumnType(
-    "integer",
-    True,
-    Encoding(fn(x) { sqlight.nullable(sqlight.int, x) }, fn(x) {
-      dynamic.optional(dynamic.int)(x)
-    }),
-  )
+fn integer_nullable_decode(dyn: Dynamic) -> Result(Option(Int), DecodeErrors) {
+  dynamic.optional(dynamic.int)(dyn)
 }
 
-pub fn bool() -> ColumnType(Bool, Value) {
-  ColumnType("integer", False, Encoding(sqlight.bool, sqlight.decode_bool))
+pub const bool = ColumnType(
+  "integer",
+  False,
+  Encoding(sqlight.bool, sqlight.decode_bool),
+)
+
+pub const bool_nullable = ColumnType(
+  "integer",
+  True,
+  Encoding(bool_nullable_encode, bool_nullable_decode),
+)
+
+fn bool_nullable_encode(val: Option(Bool)) -> Value {
+  sqlight.nullable(sqlight.bool, val)
 }
 
-pub fn bool_nullable() -> ColumnType(Option(Bool), Value) {
-  ColumnType(
-    "integer",
-    True,
-    Encoding(fn(x) { sqlight.nullable(sqlight.bool, x) }, fn(x) {
-      dynamic.optional(sqlight.decode_bool)(x)
-    }),
-  )
+fn bool_nullable_decode(dyn: Dynamic) -> Result(Option(Bool), DecodeErrors) {
+  dynamic.optional(dynamic.bool)(dyn)
 }
 
-pub fn real() -> ColumnType(Float, Value) {
-  ColumnType("real", False, Encoding(sqlight.float, dynamic.float))
+pub const real = ColumnType(
+  "real",
+  False,
+  Encoding(sqlight.float, dynamic.float),
+)
+
+pub const real_nullable = ColumnType(
+  "real",
+  True,
+  Encoding(real_nullable_encode, real_nullable_decode),
+)
+
+fn real_nullable_encode(val: Option(Float)) -> Value {
+  sqlight.nullable(sqlight.float, val)
 }
 
-pub fn real_nullable() -> ColumnType(Option(Float), Value) {
-  ColumnType(
-    "real",
-    True,
-    Encoding(fn(x) { sqlight.nullable(sqlight.float, x) }, fn(x) {
-      dynamic.optional(dynamic.float)(x)
-    }),
-  )
+fn real_nullable_decode(dyn: Dynamic) -> Result(Option(Float), DecodeErrors) {
+  dynamic.optional(dynamic.float)(dyn)
 }
 
-pub fn text() -> ColumnType(String, Value) {
-  ColumnType("text", False, Encoding(sqlight.text, dynamic.string))
+pub const text = ColumnType(
+  "text",
+  False,
+  Encoding(sqlight.text, dynamic.string),
+)
+
+pub const text_nullable = ColumnType(
+  "text",
+  True,
+  Encoding(text_nullable_encode, text_nullable_decode),
+)
+
+fn text_nullable_encode(val: Option(String)) -> Value {
+  sqlight.nullable(sqlight.text, val)
 }
 
-pub fn text_nullable() -> ColumnType(Option(String), Value) {
-  ColumnType(
-    "text",
-    True,
-    Encoding(fn(x) { sqlight.nullable(sqlight.text, x) }, fn(x) {
-      dynamic.optional(dynamic.string)(x)
-    }),
-  )
+fn text_nullable_decode(dyn: Dynamic) -> Result(Option(String), DecodeErrors) {
+  dynamic.optional(dynamic.string)(dyn)
 }
 
-pub fn blob() -> ColumnType(BitArray, Value) {
-  ColumnType("blob", False, Encoding(sqlight.blob, dynamic.bit_array))
+pub const blob = ColumnType(
+  "blob",
+  False,
+  Encoding(sqlight.blob, dynamic.bit_array),
+)
+
+pub const blob_nullable = ColumnType(
+  "blob",
+  True,
+  Encoding(blob_nullable_encode, blob_nullable_decode),
+)
+
+fn blob_nullable_encode(val: Option(BitArray)) -> Value {
+  sqlight.nullable(sqlight.blob, val)
 }
 
-pub fn blob_nullable() -> ColumnType(Option(BitArray), Value) {
-  ColumnType(
-    "blob",
-    True,
-    Encoding(fn(x) { sqlight.nullable(sqlight.blob, x) }, fn(x) {
-      dynamic.optional(dynamic.bit_array)(x)
-    }),
-  )
+fn blob_nullable_decode(dyn: Dynamic) -> Result(Option(BitArray), DecodeErrors) {
+  dynamic.optional(dynamic.bit_array)(dyn)
 }

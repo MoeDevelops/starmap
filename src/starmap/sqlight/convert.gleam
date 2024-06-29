@@ -122,14 +122,12 @@ fn filter_primary_key(column: Column(a, value)) -> Option(String) {
 }
 
 fn format_column_create_table(column: Column(a, b)) -> String {
-  let column_type = column.column_type()
-
   let builder =
     string_builder.new()
     |> append(column.name <> " ")
-    |> append(column_type.name <> " ")
+    |> append(column.column_type.name <> " ")
 
-  let builder = case column_type.nullable {
+  let builder = case column.column_type.nullable {
     False ->
       builder
       |> append("NOT NULL ")

@@ -18,7 +18,7 @@ pub fn query1(
   |> sqlight.query(
     conn,
     [],
-    dynamic.element(0, query.columns.column_type().encoding.decoder),
+    dynamic.element(0, query.columns.column_type.encoding.decoder),
   )
 }
 
@@ -35,9 +35,9 @@ pub fn query3(
     conn,
     parameters,
     dynamic.tuple3(
-      column1.column_type().encoding.decoder,
-      column2.column_type().encoding.decoder,
-      column3.column_type().encoding.decoder,
+      column1.column_type.encoding.decoder,
+      column2.column_type.encoding.decoder,
+      column3.column_type.encoding.decoder,
     ),
   )
 }
@@ -81,9 +81,9 @@ pub fn insertion3(
   conn: Connection,
 ) -> Result(Nil, Error) {
   let #(column1, column2, column3) = insertion.columns
-  let encoding1 = column1.column_type().encoding
-  let encoding2 = column2.column_type().encoding
-  let encoding3 = column3.column_type().encoding
+  let encoding1 = column1.column_type.encoding
+  let encoding2 = column2.column_type.encoding
+  let encoding3 = column3.column_type.encoding
   let decoder =
     dynamic.tuple3(encoding1.decoder, encoding2.decoder, encoding3.decoder)
 
@@ -111,8 +111,8 @@ pub fn insertion2(
   conn: Connection,
 ) -> Result(Nil, Error) {
   let #(column1, column2) = insertion.columns
-  let encoding1 = column1.column_type().encoding
-  let encoding2 = column2.column_type().encoding
+  let encoding1 = column1.column_type.encoding
+  let encoding2 = column2.column_type.encoding
   let decoder = dynamic.tuple2(encoding1.decoder, encoding2.decoder)
 
   let values =
