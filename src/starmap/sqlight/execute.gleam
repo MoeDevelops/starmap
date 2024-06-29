@@ -9,7 +9,7 @@ import starmap/schema.{type Column}
 import starmap/sqlight/convert
 
 pub fn query1(
-  query: Query(t_table, Column(a, value), t_wheres),
+  query: Query(Column(a, value), t_wheres),
   conn: Connection,
 ) -> Result(List(a), Error) {
   query
@@ -23,7 +23,6 @@ pub fn query1(
 
 pub fn query3(
   query: Query(
-    t_table,
     #(Column(a, value), Column(b, value), Column(c, value)),
     t_wheres,
   ),
@@ -85,6 +84,30 @@ pub fn insertion3(
 
   insertion
   |> convert.insertion3()
+  |> sqlight.query(conn, values, decoder)
+  |> result.map(fn(_) { Nil })
+}
+
+pub fn insertion2(
+  insertion: Insertion(#(Column(a, Value), Column(b, Value)), #(a, b)),
+  conn: Connection,
+) -> Result(Nil, Error) {
+  let #(column1, column2) = insertion.columns
+  let encoding1 = column1.column_type().encoding
+  let encoding2 = column2.column_type().encoding
+  let decoder = dynamic.tuple2(encoding1.decoder, encoding2.decoder)
+
+  let values =
+    insertion.values
+    |> list.fold([], fn(values, x) {
+      let #(value1, value2) = x
+
+      values
+      |> list.append([encoding1.encoder(value1), encoding2.encoder(value2)])
+    })
+
+  insertion
+  |> convert.insertion2()
   |> sqlight.query(conn, values, decoder)
   |> result.map(fn(_) { Nil })
 }

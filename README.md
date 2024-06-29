@@ -27,19 +27,16 @@ import sqlight
 import starmap/creation
 import starmap/insertion
 import starmap/query
-import starmap/schema.{type Column, Column, Table}
+import starmap/schema.{type Column, Column, PrimaryKey}
 import starmap/sqlight/execute
 import starmap/sqlight/types
 
-const accounts_name = "accounts"
+const accounts_table = "accounts"
 
-const accounts = Table(
-  accounts_name,
-  Accounts(
-    id: Column(accounts_name, "id", types.integer, schema.no_args),
-    name: Column(accounts_name, "name", types.text, schema.no_args),
-    avatar: Column(accounts_name, "avatar", types.text_nullable, schema.no_args),
-  ),
+const accounts = Accounts(
+  id: Column(accounts_table, "id", types.integer, [PrimaryKey]),
+  name: Column(accounts_table, "name", types.text, []),
+  avatar: Column(accounts_table, "avatar", types.text_nullable, []),
 )
 
 pub type Accounts(a) {
@@ -54,37 +51,23 @@ pub fn main() {
   use conn <- sqlight.with_connection(":memory:")
 
   let assert Ok(_) =
-    accounts
-    |> creation.create_table3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
-    |> sqlight.exec(conn)
+    accounts_table
+    |> creation.create_table3(accounts.id, accounts.name, accounts.avatar)
+    |> execute.create_table3(conn)
 
   let assert Ok(_) =
-    accounts
-    |> insertion.insert_into()
-    |> insertion.columns3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
+    insertion.insert_into(accounts_table)
+    |> insertion.columns2(accounts.name, accounts.avatar)
     |> insertion.values([
-      #(1, "Lucy", Some("lucy.svg")),
-      #(2, "John Doe", None),
-      #(3, "MoeDev", None),
+      #("Lucy", Some("lucy.svg")),
+      #("John Doe", None),
+      #("MoeDev", None),
     ])
-    |> execute.insertion3(conn)
+    |> execute.insertion2(conn)
 
   let assert Ok(results) =
-    accounts
-    |> query.from()
-    |> query.select3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
+    query.from(accounts_table)
+    |> query.select3(accounts.id, accounts.name, accounts.avatar)
     |> execute.query3(conn)
 
   results
@@ -93,6 +76,9 @@ pub fn main() {
     int.to_string(id) <> " " <> name <> " " <> option.unwrap(avatar, "")
   })
   |> list.each(io.println)
+  // 1 Lucy lucy.svg
+  // 2 John Doe 
+  // 3 MoeDev
 }
 ```
 

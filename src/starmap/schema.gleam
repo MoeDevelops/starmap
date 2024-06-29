@@ -1,15 +1,11 @@
 import gleam/dynamic.{type DecodeErrors, type Dynamic}
 
-pub type Table(table) {
-  Table(name: String, table: table)
-}
-
 pub type Column(datatype, value) {
   Column(
     table: String,
     name: String,
     column_type: fn() -> ColumnType(datatype, value),
-    arguments: fn() -> List(ColumnArguments),
+    arguments: List(ColumnArguments),
   )
 }
 
@@ -27,8 +23,5 @@ pub type Encoding(datatype, value) {
 pub type ColumnArguments {
   PrimaryKey
   ForeignKey(ref_table: String, ref_column: String)
-}
-
-pub fn no_args() {
-  []
+  Custom(s: String)
 }

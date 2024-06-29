@@ -5,43 +5,37 @@ import sqlight
 import starmap/creation
 import starmap/insertion
 import starmap/query
-import starmap/schema.{type Column, Column, Table}
+import starmap/schema.{type Column, Column, ForeignKey, PrimaryKey}
 import starmap/sqlight/execute
 import starmap/sqlight/types
 
-const accounts_name = "accounts"
+const accounts_table = "accounts"
 
-const accounts = Table(
-  accounts_name,
-  Accounts(
-    id: Column(accounts_name, "id", types.integer, schema.no_args),
-    name: Column(accounts_name, "name", types.text, schema.no_args),
-    avatar: Column(accounts_name, "avatar", types.text_nullable, schema.no_args),
-  ),
+const accounts = Accounts(
+  id: Column(accounts_table, "id", types.integer, [PrimaryKey]),
+  name: Column(accounts_table, "name", types.text, []),
+  avatar: Column(accounts_table, "avatar", types.text_nullable, []),
 )
 
-pub type Accounts(a) {
+pub type Accounts(value) {
   Accounts(
-    id: Column(Int, a),
-    name: Column(String, a),
-    avatar: Column(Option(String), a),
+    id: Column(Int, value),
+    name: Column(String, value),
+    avatar: Column(Option(String), value),
   )
 }
 
-const passwords_name = "passwords"
+const passwords_table = "passwords"
 
-const passwords = Table(
-  passwords_name,
-  Passwords(
-    account_id: Column(
-      passwords_name,
-      "account_id",
-      types.integer,
-      schema.no_args,
-    ),
-    password: Column(passwords_name, "password", types.blob, schema.no_args),
-    salt: Column(passwords_name, "salt", types.blob, schema.no_args),
+const passwords = Passwords(
+  account_id: Column(
+    passwords_table,
+    "account_id",
+    types.integer,
+    [PrimaryKey, ForeignKey(passwords_table, "id")],
   ),
+  password: Column(passwords_table, "password", types.blob, []),
+  salt: Column(passwords_table, "salt", types.blob, []),
 )
 
 pub type Passwords(a) {
@@ -57,13 +51,8 @@ fn get_connection(func) {
 }
 
 fn insert_values(conn) {
-  accounts
-  |> insertion.insert_into()
-  |> insertion.columns3(
-    accounts.table.id,
-    accounts.table.name,
-    accounts.table.avatar,
-  )
+  insertion.insert_into(accounts_table)
+  |> insertion.columns3(accounts.id, accounts.name, accounts.avatar)
   |> insertion.values([
     #(1, "Lucy", Some("somepath")),
     #(2, "Me!", None),
@@ -75,20 +64,16 @@ fn insert_values(conn) {
 }
 
 fn create_tables(conn) {
-  accounts
-  |> creation.create_table3(
-    accounts.table.id,
-    accounts.table.name,
-    accounts.table.avatar,
-  )
+  accounts_table
+  |> creation.create_table3(accounts.id, accounts.name, accounts.avatar)
   |> execute.create_table3(conn)
   |> should.be_ok()
 
-  passwords
+  passwords_table
   |> creation.create_table3(
-    passwords.table.account_id,
-    passwords.table.password,
-    passwords.table.salt,
+    passwords.account_id,
+    passwords.password,
+    passwords.salt,
   )
   |> execute.create_table3(conn)
   |> should.be_ok()
@@ -111,13 +96,8 @@ pub fn select_test() {
   insert_values(conn)
 
   let query =
-    accounts
-    |> query.from()
-    |> query.select3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
+    query.from(accounts_table)
+    |> query.select3(accounts.id, accounts.name, accounts.avatar)
 
   let results =
     query
@@ -147,13 +127,8 @@ pub fn select_amount_test() {
   insert_values(conn)
 
   let results =
-    accounts
-    |> query.from()
-    |> query.select3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
+    query.from(accounts_table)
+    |> query.select3(accounts.id, accounts.name, accounts.avatar)
     |> execute.query3(conn)
     |> should.be_ok()
 
@@ -169,13 +144,8 @@ pub fn select_amount_limit_test() {
   insert_values(conn)
 
   let results =
-    accounts
-    |> query.from()
-    |> query.select3(
-      accounts.table.id,
-      accounts.table.name,
-      accounts.table.avatar,
-    )
+    query.from(accounts_table)
+    |> query.select3(accounts.id, accounts.name, accounts.avatar)
     |> query.limit(2)
     |> execute.query3(conn)
     |> should.be_ok()

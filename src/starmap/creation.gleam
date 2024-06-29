@@ -1,11 +1,11 @@
-import starmap/schema.{type Column, type Table}
+import starmap/schema.{type Column}
 
 pub type CreateTable(t_table, t_columns) {
-  CreateTable(table: Table(t_table), columns: t_columns)
+  CreateTable(table: String, columns: t_columns)
 }
 
 pub fn create_table3(
-  table: Table(t_table),
+  table: String,
   column1: Column(a, value),
   column2: Column(b, value),
   column3: Column(c, value),

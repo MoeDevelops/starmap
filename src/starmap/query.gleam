@@ -1,10 +1,10 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import starmap/schema.{type Column, type Table}
+import starmap/schema.{type Column}
 
-pub type Query(t_table, t_columns, t_wheres) {
+pub type Query(t_columns, t_wheres) {
   Query(
-    table: Table(t_table),
+    table: String,
     columns: t_columns,
     joins: List(Join),
     wheres: Option(t_wheres),
@@ -40,9 +40,9 @@ pub type Join {
 
 // For when not being able to spread due to different generics
 fn query_replace_columns(
-  query: Query(t_table, Nil, t_wheres),
+  query: Query(Nil, t_wheres),
   columns: a,
-) -> Query(t_table, a, t_wheres) {
+) -> Query(a, t_wheres) {
   Query(
     table: query.table,
     columns: columns,
@@ -54,7 +54,7 @@ fn query_replace_columns(
   )
 }
 
-pub fn from(table: Table(t_table)) -> Query(t_table, Nil, wheres_type) {
+pub fn from(table: String) -> Query(Nil, wheres_type) {
   Query(
     table: table,
     columns: Nil,
@@ -67,10 +67,10 @@ pub fn from(table: Table(t_table)) -> Query(t_table, Nil, wheres_type) {
 }
 
 pub fn inner_join(
-  query: Query(t_table, t_columns, t_wheres),
+  query: Query(t_columns, t_wheres),
   column1: Column(a, value),
   column2: Column(a, value),
-) -> Query(t_table, t_columns, t_wheres) {
+) -> Query(t_columns, t_wheres) {
   Query(
     ..query,
     joins: query.joins
@@ -84,30 +84,26 @@ pub fn inner_join(
 }
 
 pub fn select1(
-  query: Query(t_table, Nil, t_wheres),
+  query: Query(Nil, t_wheres),
   column1: Column(a, value),
-) -> Query(t_table, Column(a, value), t_wheres) {
+) -> Query(Column(a, value), t_wheres) {
   query
   |> query_replace_columns(column1)
 }
 
 pub fn select3(
-  query: Query(t_table, Nil, t_where),
+  query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
   column3: Column(c, value),
-) -> Query(
-  t_table,
-  #(Column(a, value), Column(b, value), Column(c, value)),
-  t_where,
-) {
+) -> Query(#(Column(a, value), Column(b, value), Column(c, value)), t_where) {
   query
   |> query_replace_columns(#(column1, column2, column3))
 }
 
 pub fn limit(
-  query: Query(t_table, t_columns, t_wheres),
+  query: Query(t_columns, t_wheres),
   amount: Int,
-) -> Query(t_table, t_columns, t_wheres) {
+) -> Query(t_columns, t_wheres) {
   Query(..query, limit: Some(amount))
 }

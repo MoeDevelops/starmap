@@ -1,19 +1,27 @@
 import gleam/list
-import starmap/schema.{type Column, type Table}
+import starmap/schema.{type Column}
 
 pub type Insertion(a, b) {
   Insertion(table: String, columns: a, values: List(b))
 }
 
-pub fn insert_into(table: Table(a)) -> Insertion(Nil, Nil) {
-  Insertion(table.name, Nil, [])
+pub fn insert_into(table: String) -> Insertion(Nil, Nil) {
+  Insertion(table, Nil, [])
 }
 
 pub fn columns1(
   insertion: Insertion(Nil, Nil),
-  column1: Column(a, b),
-) -> Insertion(Column(a, b), a) {
+  column1: Column(a, value),
+) -> Insertion(Column(a, value), a) {
   Insertion(table: insertion.table, columns: column1, values: [])
+}
+
+pub fn columns2(
+  insertion: Insertion(Nil, Nil),
+  column1: Column(a, value),
+  column2: Column(b, value),
+) -> Insertion(#(Column(a, value), Column(b, value)), #(a, b)) {
+  Insertion(table: insertion.table, columns: #(column1, column2), values: [])
 }
 
 pub fn columns3(
