@@ -13,6 +13,8 @@ import starmap/query.{
 }
 import starmap/schema.{type Column, PrimaryKey}
 
+// StringBuilder
+
 fn append_line(builder: StringBuilder, s: String) -> StringBuilder {
   builder
   |> append(s <> "\n")
@@ -22,6 +24,8 @@ fn append_comma_line(builder: StringBuilder, s: String) -> StringBuilder {
   builder
   |> append(s <> ",\n")
 }
+
+// Adding
 
 fn add_limit(builder: StringBuilder, limit: Option(Int)) -> StringBuilder {
   case limit {
@@ -50,6 +54,8 @@ fn add_where(
   }
 }
 
+// Converting
+
 fn convert_where_in_add_where(where: ConvertedWhere(value)) -> String {
   case where {
     ConvertedEqual(columns) -> convert_where_columns(columns, "=")
@@ -74,7 +80,7 @@ fn convert_where_in_add_where(where: ConvertedWhere(value)) -> String {
 fn convert_where_columns(
   where_columns: ConvertedWhereColumns(value),
   operator: String,
-) {
+) -> String {
   case where_columns {
     ConvertedColumnValue(table_column, _) ->
       format_table_column(table_column) <> " " <> operator <> " ?"
@@ -95,13 +101,6 @@ fn format_table_column(table_column: TableColumn) -> String {
   table_column.table <> "." <> table_column.column
 }
 
-fn filter_primary_key(column: Column(a, value)) -> Option(String) {
-  case column.arguments |> list.contains(PrimaryKey) {
-    True -> Some(column.name)
-    False -> None
-  }
-}
-
 fn add_primary_keys(columns: List(Option(String))) -> String {
   case columns |> list.is_empty() {
     True -> ""
@@ -112,6 +111,13 @@ fn add_primary_keys(columns: List(Option(String))) -> String {
       |> list.map(fn(x) { option.unwrap(x, "") })
       |> string.join(",")
       <> ")"
+  }
+}
+
+fn filter_primary_key(column: Column(a, value)) -> Option(String) {
+  case column.arguments |> list.contains(PrimaryKey) {
+    True -> Some(column.name)
+    False -> None
   }
 }
 
@@ -134,6 +140,8 @@ fn format_column_create_table(column: Column(a, b)) -> String {
   |> string_builder.to_string()
   |> string.trim_right()
 }
+
+// Query
 
 pub fn query1(query: Query(Column(a, value), t_wheres)) -> String {
   "SELECT " <> format_column(query.columns) <> "
@@ -161,6 +169,8 @@ pub fn query3(
   |> string_builder.to_string()
 }
 
+// Create Table
+
 pub fn create_table3(
   create_table: CreateTable(
     t_table,
@@ -185,6 +195,8 @@ pub fn create_table3(
   |> append(") STRICT;")
   |> string_builder.to_string()
 }
+
+// Insert Into
 
 pub fn insertion2(
   insertion: Insertion(#(Column(a, value), Column(b, value)), #(a, b)),

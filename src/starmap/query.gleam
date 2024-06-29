@@ -2,6 +2,8 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import starmap/schema.{type Column}
 
+// Query
+
 pub type Query(t_columns, t_value) {
   Query(
     table: String,
@@ -14,9 +16,59 @@ pub type Query(t_columns, t_value) {
   )
 }
 
+// For when not being able to spread due to different generics
+fn query_replace_columns(
+  query: Query(Nil, t_wheres),
+  columns: a,
+) -> Query(a, t_wheres) {
+  Query(
+    table: query.table,
+    columns: columns,
+    joins: query.joins,
+    wheres: query.wheres,
+    order_by: query.order_by,
+    group_by: query.group_by,
+    limit: query.limit,
+  )
+}
+
+pub fn from(table: String) -> Query(Nil, wheres_type) {
+  Query(
+    table: table,
+    columns: Nil,
+    joins: [],
+    wheres: [],
+    order_by: [],
+    group_by: [],
+    limit: None,
+  )
+}
+
+pub fn select1(
+  query: Query(Nil, t_wheres),
+  column1: Column(a, value),
+) -> Query(Column(a, value), t_wheres) {
+  query
+  |> query_replace_columns(column1)
+}
+
+pub fn select3(
+  query: Query(Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+  column3: Column(c, value),
+) -> Query(#(Column(a, value), Column(b, value), Column(c, value)), t_where) {
+  query
+  |> query_replace_columns(#(column1, column2, column3))
+}
+
+// TableColumn
+
 pub type TableColumn {
   TableColumn(table: String, column: String)
 }
+
+// Where
 
 pub type Where(a, b, value) {
   Equal(columns: WhereColumns(a, value))
@@ -57,93 +109,6 @@ pub type ConvertedWhereColumns(value) {
   ConvertedColumns(column1: TableColumn, column2: TableColumn)
 }
 
-pub fn unwrap_converted_wheres(
-  converted_wheres: List(ConvertedWhere(value)),
-) -> List(Option(ConvertedWhereColumns(value))) {
-  converted_wheres
-  |> list.map(fn(converted_where) {
-    case converted_where {
-      ConvertedEqual(columns) -> [Some(columns)]
-      ConvertedNotEqual(columns) -> [Some(columns)]
-      ConvertedGreater(columns) -> [Some(columns)]
-      ConvertedGreaterOrEqual(columns) -> [Some(columns)]
-      ConvertedLower(columns) -> [Some(columns)]
-      ConvertedLowerOrEqual(columns) -> [Some(columns)]
-      ConvertedOr(where1, where2) ->
-        [unwrap_converted_wheres([where1, where2])] |> list.flatten()
-      _ -> [None]
-    }
-  })
-  |> list.flatten()
-}
-
-pub type Join {
-  Join(column1: TableColumn, column2: TableColumn)
-}
-
-// For when not being able to spread due to different generics
-fn query_replace_columns(
-  query: Query(Nil, t_wheres),
-  columns: a,
-) -> Query(a, t_wheres) {
-  Query(
-    table: query.table,
-    columns: columns,
-    joins: query.joins,
-    wheres: query.wheres,
-    order_by: query.order_by,
-    group_by: query.group_by,
-    limit: query.limit,
-  )
-}
-
-pub fn from(table: String) -> Query(Nil, wheres_type) {
-  Query(
-    table: table,
-    columns: Nil,
-    joins: [],
-    wheres: [],
-    order_by: [],
-    group_by: [],
-    limit: None,
-  )
-}
-
-pub fn inner_join(
-  query: Query(t_columns, t_wheres),
-  column1: Column(a, value),
-  column2: Column(a, value),
-) -> Query(t_columns, t_wheres) {
-  Query(
-    ..query,
-    joins: query.joins
-      |> list.append([
-        Join(
-          TableColumn(column1.table, column1.name),
-          TableColumn(column2.table, column2.name),
-        ),
-      ]),
-  )
-}
-
-pub fn select1(
-  query: Query(Nil, t_wheres),
-  column1: Column(a, value),
-) -> Query(Column(a, value), t_wheres) {
-  query
-  |> query_replace_columns(column1)
-}
-
-pub fn select3(
-  query: Query(Nil, t_where),
-  column1: Column(a, value),
-  column2: Column(b, value),
-  column3: Column(c, value),
-) -> Query(#(Column(a, value), Column(b, value), Column(c, value)), t_where) {
-  query
-  |> query_replace_columns(#(column1, column2, column3))
-}
-
 pub fn where(
   query: Query(t_columns, t_value),
   where: Where(a, b, t_value),
@@ -152,17 +117,6 @@ pub fn where(
     ..query,
     wheres: query.wheres
       |> list.append([convert_where(where)]),
-  )
-}
-
-pub fn wheres(
-  query: Query(t_columns, t_value),
-  wheres: List(Where(a, b, t_value)),
-) {
-  Query(
-    ..query,
-    wheres: query.wheres
-      |> list.append(wheres |> list.map(convert_where)),
   )
 }
 
@@ -182,6 +136,26 @@ fn convert_where(where: Where(a, b, value)) -> ConvertedWhere(value) {
     Or(where1, where2) ->
       ConvertedOr(convert_where(where1), convert_where_redirect(where2))
   }
+}
+
+pub fn unwrap_converted_wheres(
+  converted_wheres: List(ConvertedWhere(value)),
+) -> List(Option(ConvertedWhereColumns(value))) {
+  converted_wheres
+  |> list.map(fn(converted_where) {
+    case converted_where {
+      ConvertedEqual(columns) -> [Some(columns)]
+      ConvertedNotEqual(columns) -> [Some(columns)]
+      ConvertedGreater(columns) -> [Some(columns)]
+      ConvertedGreaterOrEqual(columns) -> [Some(columns)]
+      ConvertedLower(columns) -> [Some(columns)]
+      ConvertedLowerOrEqual(columns) -> [Some(columns)]
+      ConvertedOr(where1, where2) ->
+        [unwrap_converted_wheres([where1, where2])] |> list.flatten()
+      _ -> [None]
+    }
+  })
+  |> list.flatten()
 }
 
 // Needed for OR, because it has generics a and b swapped
@@ -211,6 +185,30 @@ fn convert_where_columns(
   }
 }
 
+// Join
+
+pub type Join {
+  Join(column1: TableColumn, column2: TableColumn)
+}
+
+pub fn join(
+  query: Query(t_columns, t_wheres),
+  column1: Column(a, value),
+  column2: Column(a, value),
+) -> Query(t_columns, t_wheres) {
+  Query(
+    ..query,
+    joins: query.joins
+      |> list.append([
+        Join(
+          TableColumn(column1.table, column1.name),
+          TableColumn(column2.table, column2.name),
+        ),
+      ]),
+  )
+}
+
+// Limit
 pub fn limit(
   query: Query(t_columns, t_wheres),
   amount: Int,
