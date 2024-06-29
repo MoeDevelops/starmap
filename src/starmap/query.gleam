@@ -18,7 +18,7 @@ pub type TableColumn {
   TableColumn(table: String, column: String)
 }
 
-pub type Where(a, value) {
+pub type Where(a, b, value) {
   Equal(columns: WhereColumns(a, value))
   NotEqual(columns: WhereColumns(a, value))
   IsNull(column: Column(Option(a), value))
@@ -27,7 +27,7 @@ pub type Where(a, value) {
   GreaterOrEqual(columns: WhereColumns(a, value))
   Lower(columns: WhereColumns(a, value))
   LowerOrEqual(columns: WhereColumns(a, value))
-  Or(where1: Where(a, value), where2: Where(a, value))
+  Or(where1: Where(a, b, value), where2: Where(b, a, value))
 }
 
 pub type WhereColumns(a, value) {
@@ -146,7 +146,7 @@ pub fn select3(
 
 pub fn where(
   query: Query(t_columns, t_value),
-  where: Where(a, t_value),
+  where: Where(a, b, t_value),
 ) -> Query(t_columns, t_value) {
   Query(
     ..query,
@@ -155,7 +155,10 @@ pub fn where(
   )
 }
 
-pub fn wheres(query: Query(t_columns, t_value), wheres: List(Where(a, t_value))) {
+pub fn wheres(
+  query: Query(t_columns, t_value),
+  wheres: List(Where(a, b, t_value)),
+) {
   Query(
     ..query,
     wheres: query.wheres
@@ -163,7 +166,7 @@ pub fn wheres(query: Query(t_columns, t_value), wheres: List(Where(a, t_value)))
   )
 }
 
-fn convert_where(where: Where(a, value)) -> ConvertedWhere(value) {
+fn convert_where(where: Where(a, b, value)) -> ConvertedWhere(value) {
   case where {
     Equal(columns) -> ConvertedEqual(convert_where_columns(columns))
     NotEqual(columns) -> ConvertedNotEqual(convert_where_columns(columns))
@@ -177,8 +180,13 @@ fn convert_where(where: Where(a, value)) -> ConvertedWhere(value) {
     LowerOrEqual(columns) ->
       ConvertedLowerOrEqual(convert_where_columns(columns))
     Or(where1, where2) ->
-      ConvertedOr(convert_where(where1), convert_where(where2))
+      ConvertedOr(convert_where(where1), convert_where_redirect(where2))
   }
+}
+
+// Needed for OR, because it has generics a and b swapped
+fn convert_where_redirect(where: Where(a, b, value)) -> ConvertedWhere(value) {
+  convert_where(where)
 }
 
 fn convert_where_columns(

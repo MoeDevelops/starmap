@@ -44,25 +44,30 @@ fn add_where(
       |> append("WHERE ")
       |> append(
         wheres
-        |> list.map(fn(where) {
-          case where {
-            ConvertedEqual(columns) -> convert_where_columns(columns, "=")
-            ConvertedNotEqual(columns) -> convert_where_columns(columns, "!=")
-            ConvertedIsNull(table_column) ->
-              format_table_column(table_column) <> " IS NULL"
-            ConvertedIsNotNull(table_column) ->
-              format_table_column(table_column) <> " IS NOT NULL"
-            ConvertedGreater(columns) -> convert_where_columns(columns, ">")
-            ConvertedGreaterOrEqual(columns) ->
-              convert_where_columns(columns, ">=")
-            ConvertedLower(columns) -> convert_where_columns(columns, "<")
-            ConvertedLowerOrEqual(columns) ->
-              convert_where_columns(columns, "<=")
-            ConvertedOr(where1, where2) -> todo
-          }
-        })
+        |> list.map(convert_where_in_add_where)
         |> string.join("\nAND "),
       )
+  }
+}
+
+fn convert_where_in_add_where(where: ConvertedWhere(value)) -> String {
+  case where {
+    ConvertedEqual(columns) -> convert_where_columns(columns, "=")
+    ConvertedNotEqual(columns) -> convert_where_columns(columns, "!=")
+    ConvertedIsNull(table_column) ->
+      format_table_column(table_column) <> " IS NULL"
+    ConvertedIsNotNull(table_column) ->
+      format_table_column(table_column) <> " IS NOT NULL"
+    ConvertedGreater(columns) -> convert_where_columns(columns, ">")
+    ConvertedGreaterOrEqual(columns) -> convert_where_columns(columns, ">=")
+    ConvertedLower(columns) -> convert_where_columns(columns, "<")
+    ConvertedLowerOrEqual(columns) -> convert_where_columns(columns, "<=")
+    ConvertedOr(where1, where2) ->
+      "("
+      <> convert_where_in_add_where(where1)
+      <> " OR "
+      <> convert_where_in_add_where(where2)
+      <> ")"
   }
 }
 

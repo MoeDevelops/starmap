@@ -275,6 +275,24 @@ pub fn where_lower_or_equal_test() {
   |> should.equal(2)
 }
 
+pub fn where_or_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(Or(
+    IsNotNull(accounts.avatar),
+    Equal(ColumnValue(accounts.id, 2)),
+  ))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(2)
+}
+
 pub fn multiple_where_test() {
   use conn <- get_connection()
 
