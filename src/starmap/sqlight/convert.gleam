@@ -52,7 +52,13 @@ fn add_where(
               format_table_column(table_column) <> " IS NULL"
             ConvertedIsNotNull(table_column) ->
               format_table_column(table_column) <> " IS NOT NULL"
-            _ -> panic as "Not implemented"
+            ConvertedGreater(columns) -> convert_where_columns(columns, ">")
+            ConvertedGreaterOrEqual(columns) ->
+              convert_where_columns(columns, ">=")
+            ConvertedLower(columns) -> convert_where_columns(columns, "<")
+            ConvertedLowerOrEqual(columns) ->
+              convert_where_columns(columns, "<=")
+            ConvertedOr(where1, where2) -> todo
           }
         })
         |> string.join("\nAND "),

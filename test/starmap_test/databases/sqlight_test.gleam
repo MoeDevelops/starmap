@@ -215,6 +215,66 @@ pub fn where_is_not_null_test() {
   |> should.equal(1)
 }
 
+pub fn where_greater_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(Greater(ColumnValue(accounts.id, 2)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(2)
+}
+
+pub fn where_greater_or_equal_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(GreaterOrEqual(ColumnValue(accounts.id, 2)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(3)
+}
+
+pub fn where_lower_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(Lower(ColumnValue(accounts.id, 2)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(1)
+}
+
+pub fn where_lower_or_equal_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(LowerOrEqual(ColumnValue(accounts.id, 2)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(2)
+}
+
 pub fn multiple_where_test() {
   use conn <- get_connection()
 
