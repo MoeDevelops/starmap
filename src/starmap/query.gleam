@@ -22,6 +22,7 @@ pub type Where(a, value) {
   Equal(columns: WhereColumns(a, value))
   NotEqual(columns: WhereColumns(a, value))
   IsNull(column: Column(Option(a), value))
+  IsNotNull(column: Column(Option(a), value))
   Greater(columns: WhereColumns(a, value))
   GreaterOrEqual(columns: WhereColumns(a, value))
   Lower(columns: WhereColumns(a, value))
@@ -30,19 +31,50 @@ pub type Where(a, value) {
 }
 
 pub type WhereColumns(a, value) {
-  Column(column: Column(a, value), val: a)
+  ColumnValue(column: Column(a, value), val: a)
   Columns(column1: Column(a, value), column2: Column(a, value))
+  ColumnsOneNullable(
+    column1: Column(a, value),
+    column2: Column(Option(a), value),
+  )
 }
 
 /// Where in a listable format
 pub type ConvertedWhere(value) {
   ConvertedEqual(columns: ConvertedWhereColumns(value))
+  ConvertedNotEqual(columns: ConvertedWhereColumns(value))
   ConvertedIsNull(column: TableColumn)
+  ConvertedIsNotNull(column: TableColumn)
+  ConvertedGreater(columns: ConvertedWhereColumns(value))
+  ConvertedGreaterOrEqual(columns: ConvertedWhereColumns(value))
+  ConvertedLower(columns: ConvertedWhereColumns(value))
+  ConvertedLowerOrEqual(columns: ConvertedWhereColumns(value))
+  ConvertedOr(where1: ConvertedWhere(value), where2: ConvertedWhere(value))
 }
 
 pub type ConvertedWhereColumns(value) {
-  ConvertedColumn(column: TableColumn, val: value)
+  ConvertedColumnValue(column: TableColumn, val: value)
   ConvertedColumns(column1: TableColumn, column2: TableColumn)
+}
+
+pub fn unwrap_converted_wheres(
+  converted_wheres: List(ConvertedWhere(value)),
+) -> List(Option(ConvertedWhereColumns(value))) {
+  converted_wheres
+  |> list.map(fn(converted_where) {
+    case converted_where {
+      ConvertedEqual(columns) -> [Some(columns)]
+      ConvertedNotEqual(columns) -> [Some(columns)]
+      ConvertedGreater(columns) -> [Some(columns)]
+      ConvertedGreaterOrEqual(columns) -> [Some(columns)]
+      ConvertedLower(columns) -> [Some(columns)]
+      ConvertedLowerOrEqual(columns) -> [Some(columns)]
+      ConvertedOr(where1, where2) ->
+        [unwrap_converted_wheres([where1, where2])] |> list.flatten()
+      _ -> [None]
+    }
+  })
+  |> list.flatten()
 }
 
 pub type Join {
@@ -119,14 +151,56 @@ pub fn where(
   Query(
     ..query,
     wheres: query.wheres
-      |> list.append([
-        case where {
-          IsNull(column) ->
-            ConvertedIsNull(TableColumn(column.table, column.name))
-          _ -> panic as "Not implemented"
-        },
-      ]),
+      |> list.append([convert_where(where)]),
   )
+}
+
+pub fn wheres(query: Query(t_columns, t_value), wheres: List(Where(a, t_value))) {
+  Query(
+    ..query,
+    wheres: query.wheres
+      |> list.append(wheres |> list.map(convert_where)),
+  )
+}
+
+fn convert_where(where: Where(a, value)) -> ConvertedWhere(value) {
+  case where {
+    Equal(columns) -> ConvertedEqual(convert_where_columns(columns))
+    NotEqual(columns) -> ConvertedNotEqual(convert_where_columns(columns))
+    IsNull(column) -> ConvertedIsNull(TableColumn(column.table, column.name))
+    IsNotNull(column) ->
+      ConvertedIsNotNull(TableColumn(column.table, column.name))
+    Greater(columns) -> ConvertedGreater(convert_where_columns(columns))
+    GreaterOrEqual(columns) ->
+      ConvertedGreaterOrEqual(convert_where_columns(columns))
+    Lower(columns) -> ConvertedLower(convert_where_columns(columns))
+    LowerOrEqual(columns) ->
+      ConvertedLowerOrEqual(convert_where_columns(columns))
+    Or(where1, where2) ->
+      ConvertedOr(convert_where(where1), convert_where(where2))
+  }
+}
+
+fn convert_where_columns(
+  where_columns: WhereColumns(a, value),
+) -> ConvertedWhereColumns(value) {
+  case where_columns {
+    ColumnValue(column, val) ->
+      ConvertedColumnValue(
+        TableColumn(column.table, column.name),
+        column.column_type().encoding.encoder(val),
+      )
+    Columns(column1, column2) ->
+      ConvertedColumns(
+        TableColumn(column1.table, column1.name),
+        TableColumn(column2.table, column2.name),
+      )
+    ColumnsOneNullable(column1, column2) ->
+      ConvertedColumns(
+        TableColumn(column1.table, column1.name),
+        TableColumn(column2.table, column2.name),
+      )
+  }
 }
 
 pub fn limit(

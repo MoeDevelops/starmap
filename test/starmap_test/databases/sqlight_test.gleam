@@ -4,7 +4,10 @@ import gleeunit/should
 import sqlight
 import starmap/creation
 import starmap/insertion
-import starmap/query.{IsNull}
+import starmap/query.{
+  ColumnValue, ColumnsOneNullable, Equal, Greater, GreaterOrEqual, IsNotNull,
+  IsNull, Lower, LowerOrEqual, NotEqual, Or,
+}
 import starmap/schema.{type Column, Column, ForeignKey, PrimaryKey}
 import starmap/sqlight/execute
 import starmap/sqlight/types
@@ -54,10 +57,10 @@ fn insert_values(conn) {
   insertion.insert_into(accounts_table)
   |> insertion.columns3(accounts.id, accounts.name, accounts.avatar)
   |> insertion.values([
-    #(1, "Lucy", Some("somepath")),
+    #(1, "Lucy", Some("Lucy")),
     #(2, "Me!", None),
     #(3, "You!", None),
-    #(4, "Someone!", Some("pfp")),
+    #(4, "Someone!", None),
   ])
   |> execute.insertion3(conn)
   |> should.be_ok()
@@ -90,7 +93,7 @@ pub fn select_test() {
 
   let id = 1
   let name = "Lucy"
-  let avatar = "somepath"
+  let avatar = "Lucy"
 
   create_tables(conn)
   insert_values(conn)
@@ -152,6 +155,36 @@ pub fn select_amount_limit_test() {
   |> should.equal(2)
 }
 
+pub fn where_equal_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(Equal(ColumnsOneNullable(accounts.name, accounts.avatar)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(1)
+}
+
+pub fn where_not_equal_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(NotEqual(ColumnValue(accounts.name, "Lucy")))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(3)
+}
+
 pub fn where_is_null_test() {
   use conn <- get_connection()
 
@@ -164,5 +197,36 @@ pub fn where_is_null_test() {
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
-  |> should.equal(2)
+  |> should.equal(3)
+}
+
+pub fn where_is_not_null_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(IsNotNull(accounts.avatar))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(1)
+}
+
+pub fn multiple_where_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> query.where(IsNull(accounts.avatar))
+  |> query.where(Equal(ColumnValue(accounts.id, 2)))
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.length()
+  |> should.equal(1)
 }

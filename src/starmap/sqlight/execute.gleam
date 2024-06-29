@@ -1,10 +1,11 @@
 import gleam/dynamic
 import gleam/list
+import gleam/option.{None, Some}
 import gleam/result
 import sqlight.{type Connection, type Error, type Value}
 import starmap/creation.{type CreateTable}
 import starmap/insertion.{type Insertion}
-import starmap/query.{type Query}
+import starmap/query.{type Query, ConvertedColumnValue, ConvertedColumns}
 import starmap/schema.{type Column}
 import starmap/sqlight/convert
 
@@ -22,25 +23,42 @@ pub fn query1(
 }
 
 pub fn query3(
-  query: Query(
-    #(Column(a, value), Column(b, value), Column(c, value)),
-    t_wheres,
-  ),
+  query: Query(#(Column(a, Value), Column(b, Value), Column(c, Value)), Value),
   conn: Connection,
 ) -> Result(List(#(a, b, c)), Error) {
   let #(column1, column2, column3) = query.columns
+  let parameters = get_parameters(query)
 
   query
   |> convert.query3()
   |> sqlight.query(
     conn,
-    [],
+    parameters,
     dynamic.tuple3(
       column1.column_type().encoding.decoder,
       column2.column_type().encoding.decoder,
       column3.column_type().encoding.decoder,
     ),
   )
+}
+
+fn get_parameters(query: Query(t_columns, Value)) -> List(Value) {
+  query.wheres
+  |> query.unwrap_converted_wheres()
+  |> list.filter(option.is_some)
+  |> list.map(fn(x) {
+    let assert Some(column) = x
+
+    case column {
+      ConvertedColumnValue(_, val) -> Some(val)
+      ConvertedColumns(_, _) -> None
+    }
+  })
+  |> list.filter(option.is_some)
+  |> list.map(fn(x) {
+    let assert Some(val) = x
+    val
+  })
 }
 
 pub fn create_table3(

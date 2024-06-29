@@ -6,8 +6,10 @@ import gleam/string_builder.{type StringBuilder, append}
 import starmap/creation.{type CreateTable}
 import starmap/insertion.{type Insertion}
 import starmap/query.{
-  type ConvertedWhere, type Query, type TableColumn, ConvertedIsNull,
-  TableColumn,
+  type ConvertedWhere, type ConvertedWhereColumns, type Query, type TableColumn,
+  ConvertedColumnValue, ConvertedColumns, ConvertedEqual, ConvertedGreater,
+  ConvertedGreaterOrEqual, ConvertedIsNotNull, ConvertedIsNull, ConvertedLower,
+  ConvertedLowerOrEqual, ConvertedNotEqual, ConvertedOr, TableColumn,
 }
 import starmap/schema.{type Column, PrimaryKey}
 
@@ -44,13 +46,33 @@ fn add_where(
         wheres
         |> list.map(fn(where) {
           case where {
+            ConvertedEqual(columns) -> convert_where_columns(columns, "=")
+            ConvertedNotEqual(columns) -> convert_where_columns(columns, "!=")
             ConvertedIsNull(table_column) ->
               format_table_column(table_column) <> " IS NULL"
+            ConvertedIsNotNull(table_column) ->
+              format_table_column(table_column) <> " IS NOT NULL"
             _ -> panic as "Not implemented"
           }
         })
         |> string.join("\nAND "),
       )
+  }
+}
+
+fn convert_where_columns(
+  where_columns: ConvertedWhereColumns(value),
+  operator: String,
+) {
+  case where_columns {
+    ConvertedColumnValue(table_column, _) ->
+      format_table_column(table_column) <> " " <> operator <> " ?"
+    ConvertedColumns(table_column1, table_column2) ->
+      format_table_column(table_column1)
+      <> " "
+      <> operator
+      <> " "
+      <> format_table_column(table_column2)
   }
 }
 
