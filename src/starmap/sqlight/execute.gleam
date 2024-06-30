@@ -45,20 +45,14 @@ pub fn query3(
 fn get_parameters(query: Query(t_columns, Value)) -> List(Value) {
   query.wheres
   |> query.unwrap_converted_wheres()
-  |> list.filter(option.is_some)
-  |> list.map(fn(x) {
-    let assert Some(column) = x
-
+  |> option.values()
+  |> list.map(fn(column) {
     case column {
       ConvertedColumnValue(_, val) -> Some(val)
       ConvertedColumns(_, _) -> None
     }
   })
-  |> list.filter(option.is_some)
-  |> list.map(fn(x) {
-    let assert Some(val) = x
-    val
-  })
+  |> option.values()
 }
 
 pub fn create_table3(

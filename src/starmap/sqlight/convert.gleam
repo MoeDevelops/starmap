@@ -107,8 +107,7 @@ fn add_primary_keys(columns: List(Option(String))) -> String {
     False ->
       ",\nPRIMARY KEY ("
       <> columns
-      |> list.filter(option.is_some)
-      |> list.map(fn(x) { option.unwrap(x, "") })
+      |> option.values()
       |> string.join(",")
       <> ")"
   }
