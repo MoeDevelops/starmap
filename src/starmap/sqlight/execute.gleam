@@ -57,7 +57,6 @@ fn get_parameters(query: Query(t_columns, Value)) -> List(Value) {
 
 pub fn create_table3(
   create_table: CreateTable(
-    t_table,
     #(Column(a, value), Column(b, value), Column(c, value)),
   ),
   conn: Connection,

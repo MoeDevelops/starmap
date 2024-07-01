@@ -11,7 +11,7 @@ import starmap/query.{
   ConvertedGreaterOrEqual, ConvertedIsNotNull, ConvertedIsNull, ConvertedLower,
   ConvertedLowerOrEqual, ConvertedNotEqual, ConvertedOr, TableColumn,
 }
-import starmap/schema.{type Column, PrimaryKey}
+import starmap/schema.{type Column, ForeignKey, PrimaryKey}
 
 // StringBuilder
 
@@ -133,6 +133,13 @@ fn format_column_create_table(column: Column(a, b)) -> String {
     True -> builder
   }
 
+  let builder = case column.arguments {
+    [ForeignKey(ref_table, ref_column)] ->
+      builder
+      |> append("REFERENCES " <> ref_table <> " (" <> ref_column <> ") ")
+    _ -> builder
+  }
+
   builder
   |> string_builder.to_string()
   |> string.trim_right()
@@ -168,9 +175,35 @@ pub fn query3(
 
 // Create Table
 
+pub fn create_table1(create_table: CreateTable(Column(a, value))) -> String {
+  let column1 = create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append(format_column_create_table(column1))
+  |> append_line(add_primary_keys([filter_primary_key(column1)]))
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table2(
+  create_table: CreateTable(#(Column(a, value), Column(b, value))),
+) -> String {
+  let #(column1, column2) = create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append(format_column_create_table(column2))
+  |> append_line(
+    add_primary_keys([filter_primary_key(column1), filter_primary_key(column2)]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
 pub fn create_table3(
   create_table: CreateTable(
-    t_table,
     #(Column(a, value), Column(b, value), Column(c, value)),
   ),
 ) -> String {
@@ -181,7 +214,218 @@ pub fn create_table3(
   |> append_comma_line(format_column_create_table(column1))
   |> append_comma_line(format_column_create_table(column2))
   |> append(format_column_create_table(column3))
-  // 'STRICT' enforces type-safety in the table
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table4(
+  create_table: CreateTable(
+    #(Column(a, value), Column(b, value), Column(c, value), Column(d, value)),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4) = create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append(format_column_create_table(column4))
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table5(
+  create_table: CreateTable(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+    ),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5) = create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append_comma_line(format_column_create_table(column4))
+  |> append(format_column_create_table(column5))
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table6(
+  create_table: CreateTable(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+    ),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6) =
+    create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append_comma_line(format_column_create_table(column4))
+  |> append_comma_line(format_column_create_table(column5))
+  |> append(format_column_create_table(column6))
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table7(
+  create_table: CreateTable(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+    ),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6, column7) =
+    create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append_comma_line(format_column_create_table(column4))
+  |> append_comma_line(format_column_create_table(column5))
+  |> append_comma_line(format_column_create_table(column6))
+  |> append(format_column_create_table(column7))
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table8(
+  create_table: CreateTable(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+      Column(h, value),
+    ),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6, column7, column8) =
+    create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append_comma_line(format_column_create_table(column4))
+  |> append_comma_line(format_column_create_table(column5))
+  |> append_comma_line(format_column_create_table(column6))
+  |> append_comma_line(format_column_create_table(column7))
+  |> append(format_column_create_table(column8))
+  |> append_line(
+    add_primary_keys([
+      filter_primary_key(column1),
+      filter_primary_key(column2),
+      filter_primary_key(column3),
+    ]),
+  )
+  |> append(") STRICT;")
+  |> string_builder.to_string()
+}
+
+pub fn create_table9(
+  create_table: CreateTable(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+      Column(h, value),
+      Column(i, value),
+    ),
+  ),
+) -> String {
+  let #(
+    column1,
+    column2,
+    column3,
+    column4,
+    column5,
+    column6,
+    column7,
+    column8,
+    column9,
+  ) = create_table.columns
+
+  string_builder.new()
+  |> append_line("CREATE TABLE " <> create_table.table <> " (")
+  |> append_comma_line(format_column_create_table(column1))
+  |> append_comma_line(format_column_create_table(column2))
+  |> append_comma_line(format_column_create_table(column3))
+  |> append_comma_line(format_column_create_table(column4))
+  |> append_comma_line(format_column_create_table(column5))
+  |> append_comma_line(format_column_create_table(column6))
+  |> append_comma_line(format_column_create_table(column7))
+  |> append_comma_line(format_column_create_table(column8))
+  |> append(format_column_create_table(column9))
   |> append_line(
     add_primary_keys([
       filter_primary_key(column1),
