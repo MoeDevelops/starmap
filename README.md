@@ -8,9 +8,13 @@
 ## Plans for v0.1.0 (When it will be somewhat usable)
 
 - Release hex package
-- Split project to `starmap`, `starmap_pgo` and `starmap_sqlight`
-- Remove dependencies of `gleam_pgo` and `sqlight` from `starmap`
+
+## Plans for v0.2.0
+
 - Better documentation
+- Split project to `starmap` and `starmap_sqlight`
+- Remove dependency of `sqlight` from `starmap`
+- Create `starmap_pgo`
 
 ## Usage
 
