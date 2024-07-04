@@ -22,6 +22,25 @@ pub fn query1(
   )
 }
 
+pub fn query2(
+  query: Query(#(Column(a, Value), Column(b, Value)), Value),
+  conn: Connection,
+) -> Result(List(#(a, b)), Error) {
+  let #(column1, column2) = query.columns
+  let parameters = get_parameters(query)
+
+  query
+  |> convert.query2()
+  |> sqlight.query(
+    conn,
+    parameters,
+    dynamic.tuple2(
+      column1.column_type.encoding.decoder,
+      column2.column_type.encoding.decoder,
+    ),
+  )
+}
+
 pub fn query3(
   query: Query(#(Column(a, Value), Column(b, Value), Column(c, Value)), Value),
   conn: Connection,
@@ -38,6 +57,94 @@ pub fn query3(
       column1.column_type.encoding.decoder,
       column2.column_type.encoding.decoder,
       column3.column_type.encoding.decoder,
+    ),
+  )
+}
+
+pub fn query4(
+  query: Query(
+    #(Column(a, Value), Column(b, Value), Column(c, Value), Column(d, Value)),
+    Value,
+  ),
+  conn: Connection,
+) -> Result(List(#(a, b, c, d)), Error) {
+  let #(column1, column2, column3, column4) = query.columns
+  let parameters = get_parameters(query)
+
+  query
+  |> convert.query4()
+  |> sqlight.query(
+    conn,
+    parameters,
+    dynamic.tuple4(
+      column1.column_type.encoding.decoder,
+      column2.column_type.encoding.decoder,
+      column3.column_type.encoding.decoder,
+      column4.column_type.encoding.decoder,
+    ),
+  )
+}
+
+pub fn query5(
+  query: Query(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+    ),
+    Value,
+  ),
+  conn: Connection,
+) -> Result(List(#(a, b, c, d, e)), Error) {
+  let #(column1, column2, column3, column4, column5) = query.columns
+  let parameters = get_parameters(query)
+
+  query
+  |> convert.query5()
+  |> sqlight.query(
+    conn,
+    parameters,
+    dynamic.tuple5(
+      column1.column_type.encoding.decoder,
+      column2.column_type.encoding.decoder,
+      column3.column_type.encoding.decoder,
+      column4.column_type.encoding.decoder,
+      column5.column_type.encoding.decoder,
+    ),
+  )
+}
+
+pub fn query6(
+  query: Query(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+    ),
+    Value,
+  ),
+  conn: Connection,
+) -> Result(List(#(a, b, c, d, e, f)), Error) {
+  let #(column1, column2, column3, column4, column5, column6) = query.columns
+  let parameters = get_parameters(query)
+
+  query
+  |> convert.query6()
+  |> sqlight.query(
+    conn,
+    parameters,
+    dynamic.tuple6(
+      column1.column_type.encoding.decoder,
+      column2.column_type.encoding.decoder,
+      column3.column_type.encoding.decoder,
+      column4.column_type.encoding.decoder,
+      column5.column_type.encoding.decoder,
+      column6.column_type.encoding.decoder,
     ),
   )
 }
