@@ -340,3 +340,34 @@ pub fn order_by_desc_test() {
   |> should.be_ok()
   |> should.equal("You!")
 }
+
+pub fn group_by_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  let results =
+    query.from(accounts_table)
+    |> query.select1(accounts.name)
+    |> query.group_by(accounts.avatar)
+    |> execute.query1(conn)
+    |> should.be_ok()
+
+  results
+  |> list.length()
+  |> should.equal(2)
+
+  case results {
+    [name1, name2] -> {
+      // Null avatar
+      name1
+      |> should.equal("A user")
+
+      // Only non null avatar
+      name2
+      |> should.equal("Lucy")
+    }
+    _ -> should.fail()
+  }
+}

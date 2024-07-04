@@ -36,6 +36,7 @@ fn add_query_args(
   |> add_where(query.wheres)
   |> add_limit(query.limit)
   |> add_order_by(query.order_by)
+  |> add_group_by(query.group_by)
 }
 
 fn add_select(builder: StringBuilder, columns: List(String)) -> StringBuilder {
@@ -86,13 +87,27 @@ fn add_order_by(
     _ ->
       builder
       |> append("ORDER BY ")
-      |> append(
+      |> append_line(
         order_bys
         |> list.map(fn(x) {
           let #(table_column, mod) = x
 
           format_table_column(table_column) <> " " <> mod
         })
+        |> string.join(", "),
+      )
+  }
+}
+
+fn add_group_by(builder: StringBuilder, group_bys: List(TableColumn)) {
+  case group_bys {
+    [] -> builder
+    _ ->
+      builder
+      |> append("GROUP BY ")
+      |> append_line(
+        group_bys
+        |> list.map(format_table_column)
         |> string.join(", "),
       )
   }

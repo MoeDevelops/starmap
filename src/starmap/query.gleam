@@ -240,3 +240,11 @@ pub fn order_by_desc(
       |> list.append([#(TableColumn(column.table, column.name), "DESC")]),
   )
 }
+
+pub fn group_by(query: Query(t_columns, t_wheres), column: Column(a, value)) {
+  Query(
+    ..query,
+    group_by: query.group_by
+      |> list.append([TableColumn(column.table, column.name)]),
+  )
+}
