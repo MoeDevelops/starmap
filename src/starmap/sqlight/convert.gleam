@@ -27,6 +27,29 @@ fn append_comma_line(builder: StringBuilder, s: String) -> StringBuilder {
 
 // Adding
 
+fn add_query_args(
+  builder: StringBuilder,
+  query: Query(t_columns, t_wheres),
+) -> StringBuilder {
+  builder
+  |> add_from(query.table)
+  |> add_where(query.wheres)
+  |> add_limit(query.limit)
+  |> add_order_by(query.order_by)
+}
+
+fn add_select(builder: StringBuilder, columns: List(String)) -> StringBuilder {
+  builder
+  |> append("SELECT ")
+  |> append_line(columns |> string.join(", "))
+}
+
+fn add_from(builder: StringBuilder, table: String) {
+  builder
+  |> append("FROM ")
+  |> append_line(table)
+}
+
 fn add_limit(builder: StringBuilder, limit: Option(Int)) -> StringBuilder {
   case limit {
     Some(limit) ->
@@ -50,6 +73,27 @@ fn add_where(
         wheres
         |> list.map(convert_where_in_add_where)
         |> string.join("\nAND "),
+      )
+  }
+}
+
+fn add_order_by(
+  builder: StringBuilder,
+  order_bys: List(#(TableColumn, String)),
+) -> StringBuilder {
+  case order_bys {
+    [] -> builder
+    _ ->
+      builder
+      |> append("ORDER BY ")
+      |> append(
+        order_bys
+        |> list.map(fn(x) {
+          let #(table_column, mod) = x
+
+          format_table_column(table_column) <> " " <> mod
+        })
+        |> string.join(", "),
       )
   }
 }
@@ -148,8 +192,21 @@ fn format_column_create_table(column: Column(a, b)) -> String {
 // Query
 
 pub fn query1(query: Query(Column(a, value), t_wheres)) -> String {
-  "SELECT " <> format_column(query.columns) <> "
-  FROM " <> query.table
+  string_builder.new()
+  |> add_select([format_column(query.columns)])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query2(
+  query: Query(#(Column(a, value), Column(b, value)), t_wheres),
+) -> String {
+  let #(column1, column2) = query.columns
+
+  string_builder.new()
+  |> add_select([format_column(column1), format_column(column2)])
+  |> add_query_args(query)
+  |> string_builder.to_string()
 }
 
 pub fn query3(
@@ -161,15 +218,193 @@ pub fn query3(
   let #(column1, column2, column3) = query.columns
 
   string_builder.new()
-  |> append("SELECT ")
-  |> append_line(
-    [format_column(column1), format_column(column2), format_column(column3)]
-    |> string.join(", "),
-  )
-  |> append("FROM ")
-  |> append_line(query.table)
-  |> add_where(query.wheres)
-  |> add_limit(query.limit)
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query4(
+  query: Query(
+    #(Column(a, value), Column(b, value), Column(c, value), Column(d, value)),
+    t_wheres,
+  ),
+) -> String {
+  let #(column1, column2, column3, column4) = query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query5(
+  query: Query(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+    ),
+    t_wheres,
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5) = query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+    format_column(column5),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query6(
+  query: Query(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+    ),
+    t_wheres,
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6) = query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+    format_column(column5),
+    format_column(column6),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query7(
+  query: Query(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+    ),
+    t_wheres,
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6, column7) =
+    query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+    format_column(column5),
+    format_column(column6),
+    format_column(column7),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query8(
+  query: Query(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+      Column(h, value),
+    ),
+    t_wheres,
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6, column7, column8) =
+    query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+    format_column(column5),
+    format_column(column6),
+    format_column(column7),
+    format_column(column8),
+  ])
+  |> add_query_args(query)
+  |> string_builder.to_string()
+}
+
+pub fn query9(
+  query: Query(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+      Column(g, value),
+      Column(h, value),
+      Column(i, value),
+    ),
+    t_wheres,
+  ),
+) -> String {
+  let #(
+    column1,
+    column2,
+    column3,
+    column4,
+    column5,
+    column6,
+    column7,
+    column8,
+    column9,
+  ) = query.columns
+
+  string_builder.new()
+  |> add_select([
+    format_column(column1),
+    format_column(column2),
+    format_column(column3),
+    format_column(column4),
+    format_column(column5),
+    format_column(column6),
+    format_column(column7),
+    format_column(column8),
+    format_column(column9),
+  ])
+  |> add_query_args(query)
   |> string_builder.to_string()
 }
 

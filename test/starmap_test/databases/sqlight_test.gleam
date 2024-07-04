@@ -58,7 +58,7 @@ fn insert_values(conn) {
   |> insertion.columns3(accounts.id, accounts.name, accounts.avatar)
   |> insertion.values([
     #(1, "Lucy", Some("Lucy")),
-    #(2, "Me!", None),
+    #(2, "A user", None),
     #(3, "You!", None),
     #(4, "Someone!", None),
   ])
@@ -307,4 +307,36 @@ pub fn multiple_where_test() {
   |> should.be_ok()
   |> list.length()
   |> should.equal(1)
+}
+
+pub fn order_by_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select1(accounts.name)
+  |> query.order_by(accounts.name)
+  |> execute.query1(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal("A user")
+}
+
+pub fn order_by_desc_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+  insert_values(conn)
+
+  query.from(accounts_table)
+  |> query.select1(accounts.name)
+  |> query.order_by_desc(accounts.name)
+  |> execute.query1(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal("You!")
 }

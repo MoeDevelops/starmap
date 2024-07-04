@@ -10,7 +10,7 @@ pub type Query(t_columns, t_value) {
     columns: t_columns,
     joins: List(Join),
     wheres: List(ConvertedWhere(t_value)),
-    order_by: List(TableColumn),
+    order_by: List(#(TableColumn, String)),
     group_by: List(TableColumn),
     limit: Option(Int),
   )
@@ -209,9 +209,34 @@ pub fn join(
 }
 
 // Limit
+
 pub fn limit(
   query: Query(t_columns, t_wheres),
   amount: Int,
 ) -> Query(t_columns, t_wheres) {
   Query(..query, limit: Some(amount))
+}
+
+// Order by
+
+pub fn order_by(
+  query: Query(t_columns, t_wheres),
+  column: Column(a, value),
+) -> Query(t_columns, t_wheres) {
+  Query(
+    ..query,
+    order_by: query.order_by
+      |> list.append([#(TableColumn(column.table, column.name), "ASC")]),
+  )
+}
+
+pub fn order_by_desc(
+  query: Query(t_columns, t_wheres),
+  column: Column(a, value),
+) -> Query(t_columns, t_wheres) {
+  Query(
+    ..query,
+    order_by: query.order_by
+      |> list.append([#(TableColumn(column.table, column.name), "DESC")]),
+  )
 }
