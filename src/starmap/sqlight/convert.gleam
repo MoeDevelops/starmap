@@ -113,6 +113,37 @@ fn add_group_by(builder: StringBuilder, group_bys: List(TableColumn)) {
   }
 }
 
+fn add_insert_table(builder: StringBuilder, table: String) -> StringBuilder {
+  builder
+  |> append("INSERT INTO ")
+  |> append_line(table)
+}
+
+fn add_insert_columns(
+  builder: StringBuilder,
+  columns: List(String),
+) -> StringBuilder {
+  builder
+  |> append("(")
+  |> append(columns |> string.join(", "))
+  |> append_line(")")
+}
+
+fn add_insert_values(builder: StringBuilder, values: List(a), count: Int) {
+  let val_filler =
+    list.range(1, count)
+    |> list.map(fn(_) { "?" })
+    |> string.join(", ")
+
+  builder
+  |> append_line("VALUES")
+  |> append_line(
+    values
+    |> list.map(fn(_) { "(" <> val_filler <> ")" })
+    |> string.join(", "),
+  )
+}
+
 // Converting
 
 fn convert_where_in_add_where(where: ConvertedWhere(value)) -> String {
@@ -689,18 +720,26 @@ pub fn create_table9(
 
 // Insert Into
 
+pub fn insertion1(insertion: Insertion(Column(a, value), a)) -> String {
+  let column1 = insertion.columns
+
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([column1.name])
+  |> add_insert_values(insertion.values, 1)
+  |> string_builder.to_string()
+}
+
 pub fn insertion2(
   insertion: Insertion(#(Column(a, value), Column(b, value)), #(a, b)),
 ) -> String {
   let #(column1, column2) = insertion.columns
 
-  "
-  INSERT INTO " <> insertion.table <> "
-  (" <> column1.name <> ", " <> column2.name <> ")
-  VALUES
-  " <> insertion.values
-  |> list.map(fn(_) { "(?, ?)" })
-  |> string.join(", ")
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([column1.name, column2.name])
+  |> add_insert_values(insertion.values, 2)
+  |> string_builder.to_string()
 }
 
 pub fn insertion3(
@@ -711,11 +750,81 @@ pub fn insertion3(
 ) -> String {
   let #(column1, column2, column3) = insertion.columns
 
-  "
-  INSERT INTO " <> insertion.table <> "
-  (" <> column1.name <> ", " <> column2.name <> ", " <> column3.name <> ")
-  VALUES
-  " <> insertion.values
-  |> list.map(fn(_) { "(?, ?, ?)" })
-  |> string.join(", ")
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([column1.name, column2.name, column3.name])
+  |> add_insert_values(insertion.values, 3)
+  |> string_builder.to_string()
+}
+
+pub fn insertion4(
+  insertion: Insertion(
+    #(Column(a, value), Column(b, value), Column(c, value), Column(d, value)),
+    #(a, b, c, d),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4) = insertion.columns
+
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([column1.name, column2.name, column3.name, column4.name])
+  |> add_insert_values(insertion.values, 4)
+  |> string_builder.to_string()
+}
+
+pub fn insertion5(
+  insertion: Insertion(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+    ),
+    #(a, b, c, d, e),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5) = insertion.columns
+
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([
+    column1.name,
+    column2.name,
+    column3.name,
+    column4.name,
+    column5.name,
+  ])
+  |> add_insert_values(insertion.values, 5)
+  |> string_builder.to_string()
+}
+
+pub fn insertion6(
+  insertion: Insertion(
+    #(
+      Column(a, value),
+      Column(b, value),
+      Column(c, value),
+      Column(d, value),
+      Column(e, value),
+      Column(f, value),
+    ),
+    #(a, b, c, d, e, f),
+  ),
+) -> String {
+  let #(column1, column2, column3, column4, column5, column6) =
+    insertion.columns
+
+  string_builder.new()
+  |> add_insert_table(insertion.table)
+  |> add_insert_columns([
+    column1.name,
+    column2.name,
+    column3.name,
+    column4.name,
+    column5.name,
+    column6.name,
+  ])
+  |> add_insert_values(insertion.values, 6)
+  |> string_builder.to_string()
 }

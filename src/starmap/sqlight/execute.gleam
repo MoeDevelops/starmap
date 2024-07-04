@@ -10,7 +10,7 @@ import starmap/schema.{type Column}
 import starmap/sqlight/convert
 
 pub fn query1(
-  query: Query(Column(a, value), t_wheres),
+  query: Query(Column(a, Value), t_wheres),
   conn: Connection,
 ) -> Result(List(a), Error) {
   query
@@ -162,15 +162,188 @@ fn get_parameters(query: Query(t_columns, Value)) -> List(Value) {
   |> option.values()
 }
 
+// Create Table
+
+pub fn create_table1(
+  create_table: CreateTable(Column(a, Value)),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table1()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table2(
+  create_table: CreateTable(#(Column(a, Value), Column(b, Value))),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table2()
+  |> sqlight.exec(conn)
+}
+
 pub fn create_table3(
   create_table: CreateTable(
-    #(Column(a, value), Column(b, value), Column(c, value)),
+    #(Column(a, Value), Column(b, Value), Column(c, Value)),
   ),
   conn: Connection,
 ) {
   create_table
   |> convert.create_table3()
   |> sqlight.exec(conn)
+}
+
+pub fn create_table4(
+  create_table: CreateTable(
+    #(Column(a, Value), Column(b, Value), Column(c, Value), Column(d, Value)),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table4()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table5(
+  create_table: CreateTable(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+    ),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table5()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table6(
+  create_table: CreateTable(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+    ),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table6()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table7(
+  create_table: CreateTable(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+      Column(g, Value),
+    ),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table7()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table8(
+  create_table: CreateTable(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+      Column(g, Value),
+      Column(h, Value),
+    ),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table8()
+  |> sqlight.exec(conn)
+}
+
+pub fn create_table9(
+  create_table: CreateTable(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+      Column(g, Value),
+      Column(h, Value),
+      Column(i, Value),
+    ),
+  ),
+  conn: Connection,
+) {
+  create_table
+  |> convert.create_table9()
+  |> sqlight.exec(conn)
+}
+
+// Insert into
+
+pub fn insertion1(
+  insertion: Insertion(Column(a, Value), a),
+  conn: Connection,
+) -> Result(Nil, Error) {
+  let column1 = insertion.columns
+  let encoding1 = column1.column_type.encoding
+  let decoder = encoding1.decoder
+
+  let vals =
+    insertion.values
+    |> list.fold([], fn(vals, val1) {
+      vals
+      |> list.append([encoding1.encoder(val1)])
+    })
+
+  insertion
+  |> convert.insertion1()
+  |> sqlight.query(conn, vals, decoder)
+  |> result.map(fn(_) { Nil })
+}
+
+pub fn insertion2(
+  insertion: Insertion(#(Column(a, Value), Column(b, Value)), #(a, b)),
+  conn: Connection,
+) -> Result(Nil, Error) {
+  let #(column1, column2) = insertion.columns
+  let encoding1 = column1.column_type.encoding
+  let encoding2 = column2.column_type.encoding
+  let decoder = dynamic.tuple2(encoding1.decoder, encoding2.decoder)
+
+  let vals =
+    insertion.values
+    |> list.fold([], fn(vals, x) {
+      let #(val1, val2) = x
+
+      vals
+      |> list.append([encoding1.encoder(val1), encoding2.encoder(val2)])
+    })
+
+  insertion
+  |> convert.insertion2()
+  |> sqlight.query(conn, vals, decoder)
+  |> result.map(fn(_) { Nil })
 }
 
 pub fn insertion3(
@@ -187,45 +360,164 @@ pub fn insertion3(
   let decoder =
     dynamic.tuple3(encoding1.decoder, encoding2.decoder, encoding3.decoder)
 
-  let values =
+  let vals =
     insertion.values
-    |> list.fold([], fn(values, x) {
-      let #(value1, value2, value3) = x
+    |> list.fold([], fn(vals, x) {
+      let #(val1, val2, val3) = x
 
-      values
+      vals
       |> list.append([
-        encoding1.encoder(value1),
-        encoding2.encoder(value2),
-        encoding3.encoder(value3),
+        encoding1.encoder(val1),
+        encoding2.encoder(val2),
+        encoding3.encoder(val3),
       ])
     })
 
   insertion
   |> convert.insertion3()
-  |> sqlight.query(conn, values, decoder)
+  |> sqlight.query(conn, vals, decoder)
   |> result.map(fn(_) { Nil })
 }
 
-pub fn insertion2(
-  insertion: Insertion(#(Column(a, Value), Column(b, Value)), #(a, b)),
+pub fn insertion4(
+  insertion: Insertion(
+    #(Column(a, Value), Column(b, Value), Column(c, Value), Column(d, Value)),
+    #(a, b, c, d),
+  ),
   conn: Connection,
 ) -> Result(Nil, Error) {
-  let #(column1, column2) = insertion.columns
+  let #(column1, column2, column3, column4) = insertion.columns
   let encoding1 = column1.column_type.encoding
   let encoding2 = column2.column_type.encoding
-  let decoder = dynamic.tuple2(encoding1.decoder, encoding2.decoder)
+  let encoding3 = column3.column_type.encoding
+  let encoding4 = column4.column_type.encoding
+  let decoder =
+    dynamic.tuple4(
+      encoding1.decoder,
+      encoding2.decoder,
+      encoding3.decoder,
+      encoding4.decoder,
+    )
 
-  let values =
+  let vals =
     insertion.values
-    |> list.fold([], fn(values, x) {
-      let #(value1, value2) = x
+    |> list.fold([], fn(vals, x) {
+      let #(val1, val2, val3, val4) = x
 
-      values
-      |> list.append([encoding1.encoder(value1), encoding2.encoder(value2)])
+      vals
+      |> list.append([
+        encoding1.encoder(val1),
+        encoding2.encoder(val2),
+        encoding3.encoder(val3),
+        encoding4.encoder(val4),
+      ])
     })
 
   insertion
-  |> convert.insertion2()
-  |> sqlight.query(conn, values, decoder)
+  |> convert.insertion4()
+  |> sqlight.query(conn, vals, decoder)
+  |> result.map(fn(_) { Nil })
+}
+
+pub fn insertion5(
+  insertion: Insertion(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+    ),
+    #(a, b, c, d, e),
+  ),
+  conn: Connection,
+) -> Result(Nil, Error) {
+  let #(column1, column2, column3, column4, column5) = insertion.columns
+  let encoding1 = column1.column_type.encoding
+  let encoding2 = column2.column_type.encoding
+  let encoding3 = column3.column_type.encoding
+  let encoding4 = column4.column_type.encoding
+  let encoding5 = column5.column_type.encoding
+  let decoder =
+    dynamic.tuple5(
+      encoding1.decoder,
+      encoding2.decoder,
+      encoding3.decoder,
+      encoding4.decoder,
+      encoding5.decoder,
+    )
+
+  let vals =
+    insertion.values
+    |> list.fold([], fn(vals, x) {
+      let #(val1, val2, val3, val4, val5) = x
+
+      vals
+      |> list.append([
+        encoding1.encoder(val1),
+        encoding2.encoder(val2),
+        encoding3.encoder(val3),
+        encoding4.encoder(val4),
+        encoding5.encoder(val5),
+      ])
+    })
+
+  insertion
+  |> convert.insertion5()
+  |> sqlight.query(conn, vals, decoder)
+  |> result.map(fn(_) { Nil })
+}
+
+pub fn insertion6(
+  insertion: Insertion(
+    #(
+      Column(a, Value),
+      Column(b, Value),
+      Column(c, Value),
+      Column(d, Value),
+      Column(e, Value),
+      Column(f, Value),
+    ),
+    #(a, b, c, d, e, f),
+  ),
+  conn: Connection,
+) -> Result(Nil, Error) {
+  let #(column1, column2, column3, column4, column5, column6) =
+    insertion.columns
+  let encoding1 = column1.column_type.encoding
+  let encoding2 = column2.column_type.encoding
+  let encoding3 = column3.column_type.encoding
+  let encoding4 = column4.column_type.encoding
+  let encoding5 = column5.column_type.encoding
+  let encoding6 = column6.column_type.encoding
+  let decoder =
+    dynamic.tuple6(
+      encoding1.decoder,
+      encoding2.decoder,
+      encoding3.decoder,
+      encoding4.decoder,
+      encoding5.decoder,
+      encoding6.decoder,
+    )
+
+  let vals =
+    insertion.values
+    |> list.fold([], fn(vals, x) {
+      let #(val1, val2, val3, val4, val5, val6) = x
+
+      vals
+      |> list.append([
+        encoding1.encoder(val1),
+        encoding2.encoder(val2),
+        encoding3.encoder(val3),
+        encoding4.encoder(val4),
+        encoding5.encoder(val5),
+        encoding6.encoder(val6),
+      ])
+    })
+
+  insertion
+  |> convert.insertion6()
+  |> sqlight.query(conn, vals, decoder)
   |> result.map(fn(_) { Nil })
 }

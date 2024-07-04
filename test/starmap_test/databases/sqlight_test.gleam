@@ -1,7 +1,7 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleeunit/should
-import sqlight
+import sqlight.{type Connection}
 import starmap/creation
 import starmap/insertion
 import starmap/query.{
@@ -370,4 +370,206 @@ pub fn group_by_test() {
     }
     _ -> should.fail()
   }
+}
+
+pub fn insert1_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+
+  insertion.insert_into(accounts_table)
+  |> insertion.columns1(accounts.name)
+  |> insertion.value("Lucy")
+  |> execute.insertion1(conn)
+  |> should.be_ok()
+
+  query.from(accounts_table)
+  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  |> execute.query3(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal(#(1, "Lucy", None))
+}
+
+const inserter_table = "Inserter"
+
+const inserter = Inserter(
+  id: Column(inserter_table, "id", types.integer, [PrimaryKey]),
+  field1: Column(inserter_table, "field1", types.text, []),
+  field2: Column(inserter_table, "field2", types.text_nullable, []),
+  field3: Column(inserter_table, "field3", types.text_nullable, []),
+  field4: Column(inserter_table, "field4", types.text_nullable, []),
+  field5: Column(inserter_table, "field5", types.text_nullable, []),
+)
+
+type Inserter(value) {
+  Inserter(
+    id: Column(Int, value),
+    field1: Column(String, value),
+    field2: Column(Option(String), value),
+    field3: Column(Option(String), value),
+    field4: Column(Option(String), value),
+    field5: Column(Option(String), value),
+  )
+}
+
+fn create_inserter_table(conn: Connection) {
+  creation.create_table6(
+    inserter_table,
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> execute.create_table6(conn)
+  |> should.be_ok()
+}
+
+pub fn insert3_test() {
+  use conn <- get_connection()
+
+  create_inserter_table(conn)
+
+  insertion.insert_into(inserter_table)
+  |> insertion.columns3(inserter.id, inserter.field1, inserter.field2)
+  |> insertion.value(#(1, "Bla", Some("Blu")))
+  |> execute.insertion3(conn)
+  |> should.be_ok()
+
+  query.from(inserter_table)
+  |> query.select6(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> execute.query6(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal(#(1, "Bla", Some("Blu"), None, None, None))
+}
+
+pub fn insert4_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+
+  create_inserter_table(conn)
+
+  insertion.insert_into(inserter_table)
+  |> insertion.columns4(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+  )
+  |> insertion.value(#(1, "Bla", Some("Blu"), Some("Ble")))
+  |> execute.insertion4(conn)
+  |> should.be_ok()
+
+  query.from(inserter_table)
+  |> query.select6(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> execute.query6(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal(#(1, "Bla", Some("Blu"), Some("Ble"), None, None))
+}
+
+pub fn insert5_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+
+  create_inserter_table(conn)
+
+  insertion.insert_into(inserter_table)
+  |> insertion.columns5(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+  )
+  |> insertion.value(#(1, "Bla", Some("Blu"), Some("Ble"), Some("Bli")))
+  |> execute.insertion5(conn)
+  |> should.be_ok()
+
+  query.from(inserter_table)
+  |> query.select6(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> execute.query6(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal(#(1, "Bla", Some("Blu"), Some("Ble"), Some("Bli"), None))
+}
+
+pub fn insert6_test() {
+  use conn <- get_connection()
+
+  create_tables(conn)
+
+  create_inserter_table(conn)
+
+  insertion.insert_into(inserter_table)
+  |> insertion.columns6(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> insertion.value(#(
+    1,
+    "Bla",
+    Some("Blu"),
+    Some("Ble"),
+    Some("Bli"),
+    Some("Blo"),
+  ))
+  |> execute.insertion6(conn)
+  |> should.be_ok()
+
+  query.from(inserter_table)
+  |> query.select6(
+    inserter.id,
+    inserter.field1,
+    inserter.field2,
+    inserter.field3,
+    inserter.field4,
+    inserter.field5,
+  )
+  |> execute.query6(conn)
+  |> should.be_ok()
+  |> list.first()
+  |> should.be_ok()
+  |> should.equal(#(
+    1,
+    "Bla",
+    Some("Blu"),
+    Some("Ble"),
+    Some("Bli"),
+    Some("Blo"),
+  ))
 }

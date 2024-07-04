@@ -52,6 +52,15 @@ pub fn select1(
   |> query_replace_columns(column1)
 }
 
+pub fn select2(
+  query: Query(Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+) -> Query(#(Column(a, value), Column(b, value)), t_where) {
+  query
+  |> query_replace_columns(#(column1, column2))
+}
+
 pub fn select3(
   query: Query(Nil, t_where),
   column1: Column(a, value),
@@ -60,6 +69,71 @@ pub fn select3(
 ) -> Query(#(Column(a, value), Column(b, value), Column(c, value)), t_where) {
   query
   |> query_replace_columns(#(column1, column2, column3))
+}
+
+pub fn select4(
+  query: Query(Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+  column3: Column(c, value),
+  column4: Column(d, value),
+) -> Query(
+  #(Column(a, value), Column(b, value), Column(c, value), Column(d, value)),
+  t_where,
+) {
+  query
+  |> query_replace_columns(#(column1, column2, column3, column4))
+}
+
+pub fn select5(
+  query: Query(Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+  column3: Column(c, value),
+  column4: Column(d, value),
+  column5: Column(e, value),
+) -> Query(
+  #(
+    Column(a, value),
+    Column(b, value),
+    Column(c, value),
+    Column(d, value),
+    Column(e, value),
+  ),
+  t_where,
+) {
+  query
+  |> query_replace_columns(#(column1, column2, column3, column4, column5))
+}
+
+pub fn select6(
+  query: Query(Nil, t_where),
+  column1: Column(a, value),
+  column2: Column(b, value),
+  column3: Column(c, value),
+  column4: Column(d, value),
+  column5: Column(e, value),
+  column6: Column(f, value),
+) -> Query(
+  #(
+    Column(a, value),
+    Column(b, value),
+    Column(c, value),
+    Column(d, value),
+    Column(e, value),
+    Column(f, value),
+  ),
+  t_where,
+) {
+  query
+  |> query_replace_columns(#(
+    column1,
+    column2,
+    column3,
+    column4,
+    column5,
+    column6,
+  ))
 }
 
 // TableColumn
