@@ -1,13 +1,17 @@
 # Starmap
 
-**THIS IS VERY WORK IN PROGRESS!!! EVERYTHING CAN (and probably will) BREAK!!!**
+**THIS IS VERY WORK IN PROGRESS! EVERYTHING CAN (and probably will) BREAK!**
+
+But feel free to try it out!
 
 [![Package Version](https://img.shields.io/hexpm/v/starmap)](https://hex.pm/packages/starmap)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-ffaff3)](https://hexdocs.pm/starmap/)
 
-## Plans for v0.1.0 (When it will be somewhat usable)
+## Plans for v0.1.X (Current)
 
-- Release hex package
+- Fix bugs that might occur
+- Support all operations with 1-9 columns
+- Start with documentation
 
 ## Plans for v0.2.0
 
