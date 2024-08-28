@@ -1,5 +1,5 @@
 import gleam/list
-import starmap/schema.{type Column}
+import starmap.{type Column}
 
 pub type Insertion(a, b) {
   Insertion(table: String, columns: a, values: List(b))
