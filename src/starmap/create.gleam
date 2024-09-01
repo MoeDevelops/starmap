@@ -1,17 +1,18 @@
-import starmap/schema.{type Column}
+/// Create tables in starmap
+import starmap/column.{type Column}
 
 pub type CreateTable(t_columns) {
   CreateTable(table: String, columns: t_columns)
 }
 
-pub fn create_table1(
+pub fn table1(
   table: String,
   column1: Column(a, value),
 ) -> CreateTable(Column(a, value)) {
   CreateTable(table: table, columns: column1)
 }
 
-pub fn create_table2(
+pub fn table2(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -19,7 +20,7 @@ pub fn create_table2(
   CreateTable(table: table, columns: #(column1, column2))
 }
 
-pub fn create_table3(
+pub fn table3(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -28,7 +29,7 @@ pub fn create_table3(
   CreateTable(table: table, columns: #(column1, column2, column3))
 }
 
-pub fn create_table4(
+pub fn table4(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -40,7 +41,7 @@ pub fn create_table4(
   CreateTable(table: table, columns: #(column1, column2, column3, column4))
 }
 
-pub fn create_table5(
+pub fn table5(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -65,7 +66,7 @@ pub fn create_table5(
   ))
 }
 
-pub fn create_table6(
+pub fn table6(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -93,7 +94,7 @@ pub fn create_table6(
   ))
 }
 
-pub fn create_table7(
+pub fn table7(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -124,7 +125,7 @@ pub fn create_table7(
   ))
 }
 
-pub fn create_table8(
+pub fn table8(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),
@@ -158,7 +159,7 @@ pub fn create_table8(
   ))
 }
 
-pub fn create_table9(
+pub fn table9(
   table: String,
   column1: Column(a, value),
   column2: Column(b, value),

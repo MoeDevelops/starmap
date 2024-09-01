@@ -1,6 +1,6 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import starmap/schema.{type Column}
+import starmap/column.{type Column}
 
 // Query
 
@@ -44,7 +44,7 @@ pub fn from(table: String) -> Query(Nil, wheres_type) {
   )
 }
 
-pub fn select1(
+pub fn column(
   query: Query(Nil, t_wheres),
   column1: Column(a, value),
 ) -> Query(Column(a, value), t_wheres) {
@@ -52,7 +52,7 @@ pub fn select1(
   |> query_replace_columns(column1)
 }
 
-pub fn select2(
+pub fn columns2(
   query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
@@ -61,7 +61,7 @@ pub fn select2(
   |> query_replace_columns(#(column1, column2))
 }
 
-pub fn select3(
+pub fn columns3(
   query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
@@ -71,7 +71,7 @@ pub fn select3(
   |> query_replace_columns(#(column1, column2, column3))
 }
 
-pub fn select4(
+pub fn columns4(
   query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
@@ -85,7 +85,7 @@ pub fn select4(
   |> query_replace_columns(#(column1, column2, column3, column4))
 }
 
-pub fn select5(
+pub fn columns5(
   query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
@@ -106,7 +106,7 @@ pub fn select5(
   |> query_replace_columns(#(column1, column2, column3, column4, column5))
 }
 
-pub fn select6(
+pub fn columns6(
   query: Query(Nil, t_where),
   column1: Column(a, value),
   column2: Column(b, value),
