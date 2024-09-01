@@ -2,13 +2,13 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleeunit/should
 import sqlight.{type Connection}
-import starmap/creation
-import starmap/insertion
-import starmap/query.{
+import starmap/column.{type Column, Column, ForeignKey, PrimaryKey}
+import starmap/create
+import starmap/insert
+import starmap/select.{
   ColumnValue, ColumnsOneNullable, Equal, Greater, GreaterOrEqual, IsNotNull,
   IsNull, Lower, LowerOrEqual, NotEqual, Or,
 }
-import starmap/schema.{type Column, Column, ForeignKey, PrimaryKey}
 import starmap/sqlight/execute
 import starmap/sqlight/types
 
@@ -54,9 +54,9 @@ fn get_connection(func) {
 }
 
 fn insert_values(conn) {
-  insertion.insert_into(accounts_table)
-  |> insertion.columns3(accounts.id, accounts.name, accounts.avatar)
-  |> insertion.values([
+  insert.insert_into(accounts_table)
+  |> insert.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> insert.values([
     #(1, "Lucy", Some("Lucy")),
     #(2, "A user", None),
     #(3, "You!", None),
@@ -68,16 +68,12 @@ fn insert_values(conn) {
 
 fn create_tables(conn) {
   accounts_table
-  |> creation.create_table3(accounts.id, accounts.name, accounts.avatar)
+  |> create.table3(accounts.id, accounts.name, accounts.avatar)
   |> execute.create_table3(conn)
   |> should.be_ok()
 
   passwords_table
-  |> creation.create_table3(
-    passwords.account_id,
-    passwords.password,
-    passwords.salt,
-  )
+  |> create.table3(passwords.account_id, passwords.password, passwords.salt)
   |> execute.create_table3(conn)
   |> should.be_ok()
 }
@@ -99,8 +95,8 @@ pub fn select_test() {
   insert_values(conn)
 
   let query =
-    query.from(accounts_table)
-    |> query.select3(accounts.id, accounts.name, accounts.avatar)
+    select.from(accounts_table)
+    |> select.columns3(accounts.id, accounts.name, accounts.avatar)
 
   let results =
     query
@@ -130,8 +126,8 @@ pub fn select_amount_test() {
   insert_values(conn)
 
   let results =
-    query.from(accounts_table)
-    |> query.select3(accounts.id, accounts.name, accounts.avatar)
+    select.from(accounts_table)
+    |> select.columns3(accounts.id, accounts.name, accounts.avatar)
     |> execute.query3(conn)
     |> should.be_ok()
 
@@ -146,9 +142,9 @@ pub fn select_amount_limit_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.limit(2)
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.limit(2)
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -161,9 +157,9 @@ pub fn where_equal_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(Equal(ColumnsOneNullable(accounts.name, accounts.avatar)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(Equal(ColumnsOneNullable(accounts.name, accounts.avatar)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -176,9 +172,9 @@ pub fn where_not_equal_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(NotEqual(ColumnValue(accounts.name, "Lucy")))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(NotEqual(ColumnValue(accounts.name, "Lucy")))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -191,9 +187,9 @@ pub fn where_is_null_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(IsNull(accounts.avatar))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(IsNull(accounts.avatar))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -206,9 +202,9 @@ pub fn where_is_not_null_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(IsNotNull(accounts.avatar))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(IsNotNull(accounts.avatar))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -221,9 +217,9 @@ pub fn where_greater_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(Greater(ColumnValue(accounts.id, 2)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(Greater(ColumnValue(accounts.id, 2)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -236,9 +232,9 @@ pub fn where_greater_or_equal_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(GreaterOrEqual(ColumnValue(accounts.id, 2)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(GreaterOrEqual(ColumnValue(accounts.id, 2)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -251,9 +247,9 @@ pub fn where_lower_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(Lower(ColumnValue(accounts.id, 2)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(Lower(ColumnValue(accounts.id, 2)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -266,9 +262,9 @@ pub fn where_lower_or_equal_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(LowerOrEqual(ColumnValue(accounts.id, 2)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(LowerOrEqual(ColumnValue(accounts.id, 2)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -281,9 +277,9 @@ pub fn where_or_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(Or(
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(Or(
     IsNotNull(accounts.avatar),
     Equal(ColumnValue(accounts.id, 2)),
   ))
@@ -299,10 +295,10 @@ pub fn multiple_where_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
-  |> query.where(IsNull(accounts.avatar))
-  |> query.where(Equal(ColumnValue(accounts.id, 2)))
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
+  |> select.where(IsNull(accounts.avatar))
+  |> select.where(Equal(ColumnValue(accounts.id, 2)))
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.length()
@@ -315,9 +311,9 @@ pub fn order_by_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select1(accounts.name)
-  |> query.order_by(accounts.name)
+  select.from(accounts_table)
+  |> select.column(accounts.name)
+  |> select.order_by(accounts.name)
   |> execute.query1(conn)
   |> should.be_ok()
   |> list.first()
@@ -331,9 +327,9 @@ pub fn order_by_desc_test() {
   create_tables(conn)
   insert_values(conn)
 
-  query.from(accounts_table)
-  |> query.select1(accounts.name)
-  |> query.order_by_desc(accounts.name)
+  select.from(accounts_table)
+  |> select.column(accounts.name)
+  |> select.order_by_desc(accounts.name)
   |> execute.query1(conn)
   |> should.be_ok()
   |> list.first()
@@ -348,9 +344,9 @@ pub fn group_by_test() {
   insert_values(conn)
 
   let results =
-    query.from(accounts_table)
-    |> query.select1(accounts.name)
-    |> query.group_by(accounts.avatar)
+    select.from(accounts_table)
+    |> select.column(accounts.name)
+    |> select.group_by(accounts.avatar)
     |> execute.query1(conn)
     |> should.be_ok()
 
@@ -377,14 +373,14 @@ pub fn insert1_test() {
 
   create_tables(conn)
 
-  insertion.insert_into(accounts_table)
-  |> insertion.columns1(accounts.name)
-  |> insertion.value("Lucy")
+  insert.insert_into(accounts_table)
+  |> insert.columns1(accounts.name)
+  |> insert.value("Lucy")
   |> execute.insertion1(conn)
   |> should.be_ok()
 
-  query.from(accounts_table)
-  |> query.select3(accounts.id, accounts.name, accounts.avatar)
+  select.from(accounts_table)
+  |> select.columns3(accounts.id, accounts.name, accounts.avatar)
   |> execute.query3(conn)
   |> should.be_ok()
   |> list.first()
@@ -415,7 +411,7 @@ type Inserter(value) {
 }
 
 fn create_inserter_table(conn: Connection) {
-  creation.create_table6(
+  create.table6(
     inserter_table,
     inserter.id,
     inserter.field1,
@@ -433,14 +429,14 @@ pub fn insert3_test() {
 
   create_inserter_table(conn)
 
-  insertion.insert_into(inserter_table)
-  |> insertion.columns3(inserter.id, inserter.field1, inserter.field2)
-  |> insertion.value(#(1, "Bla", Some("Blu")))
+  insert.insert_into(inserter_table)
+  |> insert.columns3(inserter.id, inserter.field1, inserter.field2)
+  |> insert.value(#(1, "Bla", Some("Blu")))
   |> execute.insertion3(conn)
   |> should.be_ok()
 
-  query.from(inserter_table)
-  |> query.select6(
+  select.from(inserter_table)
+  |> select.columns6(
     inserter.id,
     inserter.field1,
     inserter.field2,
@@ -462,19 +458,19 @@ pub fn insert4_test() {
 
   create_inserter_table(conn)
 
-  insertion.insert_into(inserter_table)
-  |> insertion.columns4(
+  insert.insert_into(inserter_table)
+  |> insert.columns4(
     inserter.id,
     inserter.field1,
     inserter.field2,
     inserter.field3,
   )
-  |> insertion.value(#(1, "Bla", Some("Blu"), Some("Ble")))
+  |> insert.value(#(1, "Bla", Some("Blu"), Some("Ble")))
   |> execute.insertion4(conn)
   |> should.be_ok()
 
-  query.from(inserter_table)
-  |> query.select6(
+  select.from(inserter_table)
+  |> select.columns6(
     inserter.id,
     inserter.field1,
     inserter.field2,
@@ -496,20 +492,20 @@ pub fn insert5_test() {
 
   create_inserter_table(conn)
 
-  insertion.insert_into(inserter_table)
-  |> insertion.columns5(
+  insert.insert_into(inserter_table)
+  |> insert.columns5(
     inserter.id,
     inserter.field1,
     inserter.field2,
     inserter.field3,
     inserter.field4,
   )
-  |> insertion.value(#(1, "Bla", Some("Blu"), Some("Ble"), Some("Bli")))
+  |> insert.value(#(1, "Bla", Some("Blu"), Some("Ble"), Some("Bli")))
   |> execute.insertion5(conn)
   |> should.be_ok()
 
-  query.from(inserter_table)
-  |> query.select6(
+  select.from(inserter_table)
+  |> select.columns6(
     inserter.id,
     inserter.field1,
     inserter.field2,
@@ -531,8 +527,8 @@ pub fn insert6_test() {
 
   create_inserter_table(conn)
 
-  insertion.insert_into(inserter_table)
-  |> insertion.columns6(
+  insert.insert_into(inserter_table)
+  |> insert.columns6(
     inserter.id,
     inserter.field1,
     inserter.field2,
@@ -540,7 +536,7 @@ pub fn insert6_test() {
     inserter.field4,
     inserter.field5,
   )
-  |> insertion.value(#(
+  |> insert.value(#(
     1,
     "Bla",
     Some("Blu"),
@@ -551,8 +547,8 @@ pub fn insert6_test() {
   |> execute.insertion6(conn)
   |> should.be_ok()
 
-  query.from(inserter_table)
-  |> query.select6(
+  select.from(inserter_table)
+  |> select.columns6(
     inserter.id,
     inserter.field1,
     inserter.field2,

@@ -3,10 +3,10 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/result
 import sqlight.{type Connection, type Error, type Value}
-import starmap/creation.{type CreateTable}
-import starmap/insertion.{type Insertion}
-import starmap/query.{type Query, ConvertedColumnValue, ConvertedColumns}
-import starmap/schema.{type Column}
+import starmap/column.{type Column}
+import starmap/create.{type CreateTable}
+import starmap/insert.{type Insertion}
+import starmap/select.{type Query, ConvertedColumnValue, ConvertedColumns}
 import starmap/sqlight/convert
 
 pub fn query1(
@@ -151,7 +151,7 @@ pub fn query6(
 
 fn get_parameters(query: Query(t_columns, Value)) -> List(Value) {
   query.wheres
-  |> query.unwrap_converted_wheres()
+  |> select.unwrap_converted_wheres()
   |> option.values()
   |> list.map(fn(column) {
     case column {

@@ -1,5 +1,5 @@
 /// Create tables in starmap
-import starmap.{type Column}
+import starmap/column.{type Column}
 
 pub type CreateTable(t_columns) {
   CreateTable(table: String, columns: t_columns)

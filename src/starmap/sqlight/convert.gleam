@@ -3,15 +3,15 @@ import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
 import gleam/string_builder.{type StringBuilder, append}
-import starmap/creation.{type CreateTable}
-import starmap/insertion.{type Insertion}
-import starmap/query.{
+import starmap/column.{type Column, ForeignKey, PrimaryKey}
+import starmap/create.{type CreateTable}
+import starmap/insert.{type Insertion}
+import starmap/select.{
   type ConvertedWhere, type ConvertedWhereColumns, type Query, type TableColumn,
   ConvertedColumnValue, ConvertedColumns, ConvertedEqual, ConvertedGreater,
   ConvertedGreaterOrEqual, ConvertedIsNotNull, ConvertedIsNull, ConvertedLower,
   ConvertedLowerOrEqual, ConvertedNotEqual, ConvertedOr, TableColumn,
 }
-import starmap/schema.{type Column, ForeignKey, PrimaryKey}
 
 // StringBuilder
 

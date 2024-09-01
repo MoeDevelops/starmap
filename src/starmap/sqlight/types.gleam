@@ -1,7 +1,7 @@
 import gleam/dynamic.{type DecodeErrors, type Dynamic}
 import gleam/option.{type Option}
 import sqlight.{type Value}
-import starmap/schema.{type ColumnType, ColumnType, Encoding}
+import starmap/column.{type ColumnType, ColumnType, Encoding}
 
 pub const integer = ColumnType(
   "integer",

@@ -1,6 +1,6 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import starmap.{type Column}
+import starmap/column.{type Column}
 
 // Query
 
